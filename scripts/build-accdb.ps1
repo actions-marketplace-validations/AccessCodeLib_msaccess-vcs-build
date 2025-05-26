@@ -49,3 +49,8 @@ while (Get-ChildItem -Path . -Filter *.laccdb) {
 	Write-Host "."
 }
 $access.Quit(1)
+
+Remove-Item -Path "$accdbPath" -ErrorAction SilentlyContinue
+
+New-Item -Path "bin" -ItemType Directory -Force
+Copy-Item -Path ".\*.accdb" -Destination ".\bin\"
