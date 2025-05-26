@@ -1,5 +1,5 @@
 param(
-    [string]$LocationName
+    [string]$LocationName,
     [string]$TrustedPath
 )
 
