@@ -1,0 +1,41 @@
+name: "msaccess-vcs Build"
+description: "Build accdb/accde file from source (msaccess-vcs exports)."
+
+branding:
+  icon: 'code'
+  color: 'blue' 
+
+inputs:
+  source-dir:
+    description: 'msaccess-vcs source folder'
+    required: false
+    default: 'source'
+ compile:
+    description: 'create accde file'
+    required: false
+    default: 'false'
+runs:
+  using: "composite"
+  steps:
+    - name: "Installing Office 365 (takes about 5 minutes...)"
+      id: "install_office"
+      shell: pwsh
+      run: choco install office365proplus -y
+    - name: "Display Chocolatey logs in case of Office install failure"
+      if: failure() && steps.install_office.outcome == 'failure'
+      run: |
+        if (Test-Path -Path "C:\ProgramData\chocolatey\logs\chocolatey.log") {
+          Write-Host "============ Chocolatey Log Contents ============"
+          Get-Content -Path "C:\ProgramData\chocolatey\logs\chocolatey.log"
+          Write-Host "============ End of Chocolatey Logs ============="
+        } else {
+          Write-Host "Chocolatey log file not found at C:\ProgramData\chocolatey\logs\chocolatey.log"
+        }
+      shell: pwsh
+    - name: "Build accdb/accde from msaccess-vcs export"
+      shell: pwsh
+      run: '${{ github.action_path }}\Build.ps1 -SourceDir "${{ inputs.source-dir }}" -Compile "${{ inputs.compile }}"'
+outputs:
+  result:
+    description: "The result of the VBA build process."
+    value: "success"
