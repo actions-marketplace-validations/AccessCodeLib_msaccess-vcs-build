@@ -10,7 +10,7 @@ inputs:
     description: 'msaccess-vcs source folder'
     required: false
     default: 'source'
- compile:
+  compile:
     description: 'create accde file'
     required: false
     default: 'false'
