@@ -9,7 +9,7 @@ $headers = @{
 $release = Invoke-RestMethod -Uri $vcsUrl -Headers $headers
 
 # zip url
-$asset = $release.assets | Where-Object { $_.name -like "*.zip" } | Select-Object -First 1
+$asset = $release.assets | Where-Object { $_.name -like "Version*.zip" } | Select-Object -First 1
 $zipUrl = $asset.browser_download_url
 
 # save as
