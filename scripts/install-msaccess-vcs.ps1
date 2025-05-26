@@ -34,3 +34,6 @@ if (Test-Path $addInPath) {
 Rename-Item -Path $unzipVcsFile -NewName $addInFileName -Force
 
 Write-Host "msaccess-vcs installed: $addInPath"
+
+Write-Host "Set trutsted location: $addInFolder"
+. "$PSScriptRoot/set-trusted-location.ps1" "Add-in-folder" "${SourceDir}/${folder}"
