@@ -20,7 +20,7 @@ runs:
   steps:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: pwsh
-      run: '${{ github.action_path }}\Build.ps1 -SourceDir "${{ inputs.source-dir }}" -Compile "${{ inputs.compile }}"'
+      run: '${{ github.action_path }}\Build.ps1 "MSACCESS"'
 outputs:
   result:
     description: "The result of the VBA build process."

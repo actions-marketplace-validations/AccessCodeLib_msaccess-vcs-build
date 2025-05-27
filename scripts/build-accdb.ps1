@@ -3,8 +3,14 @@
 #
 param(
     [string]$SourceDir,
-    [string]$FileName = "TempApp"
+	[string]$TargetDir = ".\bin"
+	[string]$FileName = "" # empty = name from vcs options
 )
+
+$tempFileName = "TempApp"
+if ($FileName -eq "") {
+    $FileName = $tempFileName
+}
 
 $curDir = $(pwd)
 $accdbPath = "$curDir\$FileName.accdb"
@@ -53,7 +59,10 @@ while ((Get-ChildItem -Path . -Filter *.laccdb) -and ($stopwatch.Elapsed.TotalSe
 $stopwatch.Stop()
 $access.Quit(1)
 
-Remove-Item -Path "$accdbPath" -ErrorAction SilentlyContinue
+$tempFileName = "TempApp"
+if ($FileName -eq $tempFileName) {
+    Remove-Item -Path "$accdbPath" -ErrorAction SilentlyContinue
+}
 
 New-Item -Path "bin" -ItemType Directory -Force
-Copy-Item -Path ".\*.accdb" -Destination ".\bin\"
+Copy-Item -Path ".\*.accdb" -Destination "$TargetDir\"

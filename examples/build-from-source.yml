@@ -1,0 +1,50 @@
+name: build-from-source
+on:
+  - workflow_dispatch
+
+permissions:
+  id-token: write
+  attestations: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ACCESS_TOKEN }} 
+      - name: "Installing Office 365 (takes about 5 minutes...)"
+        id: "install_office"
+        shell: pwsh
+        run: choco install office365proplus -y
+        timeout-minutes: 10
+      - name: "Display Chocolatey logs in case of Office install failure"
+        if: failure() && steps.install_office.outcome == 'failure'
+        run: |
+          if (Test-Path -Path "C:\ProgramData\chocolatey\logs\chocolatey.log") {
+            Write-Host "============ Chocolatey Log Contents ============"
+            Get-Content -Path "C:\ProgramData\chocolatey\logs\chocolatey.log"
+            Write-Host "============ End of Chocolatey Logs ============="
+          } else {
+            Write-Host "Chocolatey log file not found at C:\ProgramData\chocolatey\logs\chocolatey.log"
+          }
+        shell: pwsh
+      - name: "Build Access file (accdb/accde)"
+        id: build_access_file
+        uses: AccessCodeLib/msaccess-vcs-build@main
+        with:
+          source-dir: "./source"
+        timeout-minutes: 10
+      - name: "Upload Build Artifact"
+        uses: actions/upload-artifact@v4
+        id: "upload"
+        with:
+          name: "Binary files"
+          path: "./bin/*"
+          if-no-files-found: warn
+      - name: "Attestation"
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: "Binary files"
+          subject-digest: sha256:${{ steps.upload.outputs.artifact-digest }}
