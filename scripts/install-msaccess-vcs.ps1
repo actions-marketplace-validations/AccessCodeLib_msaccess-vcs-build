@@ -1,3 +1,4 @@
+#
 # install msaccess-vcs
 #
 # URL
@@ -20,20 +21,15 @@ Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
 
 Write-Host "zip file downloaded from $zipUrl to $zipFile"
 
-# extrat to %appdata%\Microsoft\AddIns
+# extrat to %appdata%\MSAccessVCS
 $appdata = $env:APPDATA
-$addInFolder = Join-Path $appdata "Microsoft\AddIns"
+$addInFolder = Join-Path $appdata "MSAccessVCS"
 Expand-Archive -Path $zipFile -DestinationPath $addInFolder -Force
 
-$addInFileName = "msaccess-vcs.accda"
+$addInFileName = "Version Control.accda"
 $addInPath = Join-Path $addInFolder $addInFileName
-$unzipVcsFile = Join-Path $addInFolder "Version Control.accda"
-if (Test-Path $addInPath) {
-    Remove-Item $addInPath -Force
-}
-Rename-Item -Path $unzipVcsFile -NewName $addInFileName -Force
 
 Write-Host "msaccess-vcs installed: $addInPath"
 
-Write-Host "Set trutsted location: $addInFolder"
-. "$PSScriptRoot/set-trusted-location.ps1" "Add-in-folder" "$addInFolder"
+Write-Host "Set trusted location: $addInFolder"
+. "$PSScriptRoot/set-trusted-location.ps1" "VCS-add-in-folder" "$addInFolder"

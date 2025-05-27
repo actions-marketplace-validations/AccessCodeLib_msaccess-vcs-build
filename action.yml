@@ -9,7 +9,7 @@ inputs:
   source-dir:
     description: 'msaccess-vcs source folder'
     required: false
-    default: 'source'
+    default: '\source'
   compile:
     description: 'create accde file'
     required: false
@@ -20,7 +20,7 @@ runs:
   steps:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: pwsh
-      run: '${{ github.action_path }}\Build.ps1 "MSACCESS"'
+      run: '${{ github.action_path }}\Build.ps1 -SourceDir "${{ inputs.source-dir }}"'
 outputs:
   result:
     description: "The result of the VBA build process."
