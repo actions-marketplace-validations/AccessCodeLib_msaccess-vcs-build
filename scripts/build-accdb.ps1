@@ -8,17 +8,15 @@ param(
 
 $curDir = $(pwd)
 $accdbPath = "$curDir\$FileName.accdb"
-
 if (-not (Test-Path $accdbPath)) {
-		
-	$access = New-Object -ComObject Access.Application
-	$access.Visible = $true
+    $access = New-Object -ComObject Access.Application
+    $access.Visible = $true
     $access.NewCurrentDatabase($accdbPath)
-	$access.CloseCurrentDatabase()
-	Start-Sleep -Seconds 2
-	$access.Quit(0)
-	$access = New-Object -ComObject Access.Application
-	$access.Visible = $true
+    $access.CloseCurrentDatabase()
+    Start-Sleep -Seconds 2
+    $access.Quit(0)
+    $access = New-Object -ComObject Access.Application
+    $access.Visible = $true
 }
 
 $access = New-Object -ComObject Access.Application
@@ -32,6 +30,7 @@ $addInProcessPath = Join-Path $addInFolder "msaccess-vcs"
 # $addInProcessPath = Join-Path $addInFolder "Version Control"
 
 Write-Host "$addInProcessPath"
+Write-Host "$(pwd)SourceDir"
 
 $access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
 $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
@@ -39,15 +38,19 @@ $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$S
 # $vcs = $access.Run("$addInProcessPath.VCS")
 # $vcs.Build($sourcePath)
 
-while (Get-ChildItem -Path . -Filter *.laccdb) {
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+while ((Get-ChildItem -Path . -Filter *.laccdb) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)) {
     Start-Sleep -Seconds 2
-	Write-Host "."
+    Write-Host "."
 }
+$stopwatch.Stop()
 Start-Sleep -Seconds 2
-while (Get-ChildItem -Path . -Filter *.laccdb) {
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+while ((Get-ChildItem -Path . -Filter *.laccdb) -and ($stopwatch.Elapsed.TotalSeconds -lt 10)) {
     Start-Sleep -Seconds 2
-	Write-Host "."
+    Write-Host "."
 }
+$stopwatch.Stop()
 $access.Quit(1)
 
 Remove-Item -Path "$accdbPath" -ErrorAction SilentlyContinue
