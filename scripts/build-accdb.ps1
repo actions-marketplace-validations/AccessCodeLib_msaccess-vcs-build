@@ -3,7 +3,7 @@
 #
 param(
     [string]$SourceDir,
-	[string]$FileName = "TempApp"
+    [string]$FileName = "TempApp"
 )
 
 $curDir = $(pwd)
