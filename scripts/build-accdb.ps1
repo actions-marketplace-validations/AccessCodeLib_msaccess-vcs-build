@@ -7,7 +7,7 @@ param(
 	[string]$FileName = "" # empty = name from vcs options
 )
 
-$tempFileName = "TempApp"
+$tempFileName = "VcsBuildTempApp"
 $accdbFileName = $tempFileName
 if ($FileName -gt "") {
     $accdbFileName = $FileName
@@ -15,20 +15,16 @@ if ($FileName -gt "") {
 
 $curDir = $(pwd)
 $accdbPath = "$curDir\$accdbFileName.accdb"
-if (-not (Test-Path $accdbPath)) {
-    $access = New-Object -ComObject Access.Application
-    $access.Visible = $true
-    $access.NewCurrentDatabase($accdbPath)
-    $access.CloseCurrentDatabase()
-    Start-Sleep -Seconds 2
-    $access.Quit(0)
-	$access = $null
-	Start-Sleep -Seconds 2
-}
 
+# open/create access file
 $access = New-Object -ComObject Access.Application
 $access.Visible = $true
-$access.OpenCurrentDatabase($accdbPath)
+if (-not (Test-Path $accdbPath)) {    
+    $access.NewCurrentDatabase($accdbPath)
+} 
+else {
+	$access.OpenCurrentDatabase($accdbPath)
+}
 
 $appdata = $env:APPDATA
 $addInFolder = Join-Path $appdata "MSAccessVCS"
@@ -38,43 +34,53 @@ if (
     -not ([System.IO.Path]::IsPathRooted($SourceDir)) -or
     ($SourceDir -match "^[\\\/]") # "\source" or "/source"
 ) {
-    $SourceDir = Join-Path -Path (Get-Location) -ChildPath $SourceDir.TrimStart('\','/')
+    $SourceDir = Join-Path -Path (Get-Location) -ChildPath $SourceDir.TrimStart('\','/','.')
 }
 
 Write-Host "add-in path: $addInProcessPath"
 Write-Host "current path: $(pwd)"
 Write-Host "source: $SourceDir"
-
-$access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
-$access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
-
-# $vcs = $access.Run("$addInProcessPath.VCS")
-# $vcs.Build($SourceDir)
-# $vcs = $null
-
-$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)) {
-    Start-Sleep -Seconds 2
-    Write-Host "." -NoNewline
-}
-$stopwatch.Stop()
-Start-Sleep -Seconds 3
-$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)) {
-    Start-Sleep -Seconds 2
-    Write-Host "." -NoNewline
-}
-$stopwatch.Stop()
-Start-Sleep -Seconds 3
 Write-Host ""
 
-$builtFileName = $access.CurrentProject.Name
+Write-Host "Start msaccess-vcs build " -NoNewline
+$access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
+Write-Host "." -NoNewline
+$null = $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
 
-$access.Quit(1)
+# VCS Build close tempApp and reopen new accdb => check 2x for Forms.Count
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)) {
+    Start-Sleep -Seconds 2
+    Write-Host "." -NoNewline
+}
+$stopwatch.Stop()
 Start-Sleep -Seconds 3
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)) {
+    Start-Sleep -Seconds 2
+    Write-Host "." -NoNewline
+}
+$stopwatch.Stop()
+Write-Host " completed"
 
+$builtFileName = $access.CurrentProject.Name
 Write-Host "Built: $builtFileName"
 
+Start-Sleep -Seconds 1
+Write-Host "Close Access " -NoNewline
+$access.Quit(2)
+Write-Host "." -NoNewline
+Start-Sleep -Seconds 1
+Write-Host "." -NoNewline
+[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
+Remove-Variable access
+[GC]::Collect()
+Write-Host "." -NoNewline
+[GC]::WaitForPendingFinalizers()
+Write-Host " completed"
+Write-Host ""
+
+# copy file to TargetDir
 if ($FileName -eq "") {
     $FileName = $builtFileName
 }
@@ -83,6 +89,9 @@ if (
     -not [string]::IsNullOrWhiteSpace($builtFileName) -and
     $builtFileName -ne "$tempFileName.accdb"
 ) {
+	Write-Host "Copy accdb to $TargetDir"
 	New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
     Copy-Item -Path ".\$builtFileName" -Destination "$TargetDir\$FileName"
+	Write-Host ""
 }
+Write-Host "Build accdb completed" -NoNewline
