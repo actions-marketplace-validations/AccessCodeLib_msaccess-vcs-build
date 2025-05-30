@@ -8,6 +8,6 @@ Write-Host "Install msaccess-vcs"
 . "$PSScriptRoot/scripts/install-msaccess-vcs.ps1" "${vcsUrl}"
 Write-Host "-----"
 
-Write-Host "Build accda"
+Write-Host "Build accdb"
 . "$PSScriptRoot/scripts/build-accdb.ps1" "${SourceDir}"
 Write-Host "-----"
