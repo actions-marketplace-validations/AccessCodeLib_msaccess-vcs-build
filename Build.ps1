@@ -5,7 +5,7 @@ param(
 )
 
 Write-Host "Install msaccess-vcs"
-. "$PSScriptRoot/scripts/install-msaccess-vcs.ps1" -vcsUrl "$vcsUrl"
+. "$PSScriptRoot/scripts/install-msaccess-vcs.ps1" "${vcsUrl}"
 Write-Host "-----"
 
 Write-Host "build accda"
