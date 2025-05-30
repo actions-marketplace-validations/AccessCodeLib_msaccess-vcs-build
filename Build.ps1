@@ -1,10 +1,11 @@
 param(
     [string]$SourceDir = "\source",
-    [string]$Compile = "false" # Default to "false" if not specified
+    [string]$Compile = "false" # Default to "false" if not specified,
+    [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
 )
 
 Write-Host "Install msaccess-vcs"
-. "$PSScriptRoot/scripts/install-msaccess-vcs.ps1"
+. "$PSScriptRoot/scripts/install-msaccess-vcs.ps1" -vcsUrl "$vcsUrl"
 Write-Host "-----"
 
 Write-Host "build accda"
