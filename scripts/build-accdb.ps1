@@ -3,7 +3,7 @@
 #
 param(
     [string]$SourceDir,
-	[string]$TargetDir = "bin",
+	[string]$TargetDir = "",
 	[string]$FileName = "" # empty = name from vcs options
 )
 
@@ -37,9 +37,9 @@ if (
     $SourceDir = Join-Path -Path (Get-Location) -ChildPath $SourceDir.TrimStart('\','/','.')
 }
 
-Write-Host "add-in path: $addInProcessPath"
-Write-Host "current path: $(pwd)"
-Write-Host "source: $SourceDir"
+Write-Host "Add-in path: $addInProcessPath"
+Write-Host "Current path: $(pwd)"
+Write-Host "Source: $SourceDir"
 Write-Host ""
 
 Write-Host "Start msaccess-vcs build " -NoNewline
@@ -64,7 +64,6 @@ $stopwatch.Stop()
 Write-Host " completed"
 
 $builtFileName = $access.CurrentProject.Name
-Write-Host "Built: $builtFileName"
 
 Start-Sleep -Seconds 1
 Write-Host "Close Access " -NoNewline
@@ -80,18 +79,38 @@ Write-Host "." -NoNewline
 Write-Host " completed"
 Write-Host ""
 
+
+if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
+	Write-Host "Built: $builtFileName"
+} else {
+	Write-Host "Build failed"
+	exit 1
+}
+
+
 # copy file to TargetDir
 if ($FileName -eq "") {
     $FileName = $builtFileName
 }
 
-if (
-    -not [string]::IsNullOrWhiteSpace($builtFileName) -and
-    $builtFileName -ne "$tempFileName.accdb"
-) {
+$targetFilePath = $FileName
+if ($TargetDir -gt "") {
 	Write-Host "Copy accdb to $TargetDir"
 	New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
     Copy-Item -Path ".\$builtFileName" -Destination "$TargetDir\$FileName"
 	Write-Host ""
+	$targetFilePath = "$TargetDir\$FileName"
+} elseif ($FileName -ne $builtFileName) {
+	Rename-Item -Path ".\$builtFileName" -NewName $FileName -Force
+	Write-Host ""
 }
-Write-Host "::notice::Build accdb completed: $FileName"
+
+if ( -not ([System.IO.Path]::IsPathRooted($targetFilePath))) {
+    $targetFilePath = Join-Path -Path (Get-Location) -ChildPath $targetFilePath.TrimStart('\','/','.')
+}
+
+#Write-Host "::notice::Build accdb completed: $FileName"
+#Write-Host "|$targetFilePath|"
+#Write-Host ""
+#
+return $targetFilePath
