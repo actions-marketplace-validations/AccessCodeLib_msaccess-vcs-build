@@ -15,7 +15,7 @@ inputs:
     required: false
     default: 'false'
   vcs-url:
-    description: 'msaccess-vcs source folder'
+    description: 'msaccess-vcs release url'
     required: false
     default: 'https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest'
 runs:
