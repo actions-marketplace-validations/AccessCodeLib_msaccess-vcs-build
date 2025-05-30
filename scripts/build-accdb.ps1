@@ -64,7 +64,7 @@ $stopwatch.Stop()
 Write-Host " completed"
 
 $builtFileName = $access.CurrentProject.Name
-Write-Host "Built: $builtFileName" -ForegroundColor Green
+Write-Host "Built: $builtFileName"
 
 Start-Sleep -Seconds 1
 Write-Host "Close Access " -NoNewline
