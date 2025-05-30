@@ -14,13 +14,16 @@ inputs:
     description: 'create accde file'
     required: false
     default: 'false'
-    
+  vcs-url:
+    description: 'msaccess-vcs source folder'
+    required: false
+    default: 'https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest'
 runs:
   using: "composite"
   steps:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: pwsh
-      run: '${{ github.action_path }}\Build.ps1 -SourceDir "${{ inputs.source-dir }}"'
+      run: '${{ github.action_path }}\Build.ps1 -SourceDir "${{ inputs.source-dir }}" -vcsUrl "${{ inputs.vcs-url }}"'
 outputs:
   result:
     description: "The result of the VBA build process."
