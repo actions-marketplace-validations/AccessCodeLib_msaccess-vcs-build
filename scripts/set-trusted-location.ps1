@@ -12,5 +12,5 @@ If (-Not (Test-Path $regPath)) {
     New-Item -Path $regPath -Force | Out-Null
 }
 
-New-ItemProperty -Path $regPath -Name "Path" -Value $TrustedPath -PropertyType String -Force
-New-ItemProperty -Path $regPath -Name "AllowSubfolders" -Value 1 -PropertyType DWord -Force
+New-ItemProperty -Path $regPath -Name "Path" -Value $TrustedPath -PropertyType String -Force | Out-Null
+New-ItemProperty -Path $regPath -Name "AllowSubfolders" -Value 1 -PropertyType DWord -Force | Out-Null
