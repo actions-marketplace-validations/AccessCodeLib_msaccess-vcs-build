@@ -1,9 +1,15 @@
 #
 # install msaccess-vcs
 #
+param(
+    [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
+	[string]$TargetDir = "bin",
+	[string]$FileName = "" # empty = name from vcs options
+)
 # URL
 # $vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest"
-$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
+# $vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
+
 $headers = @{
     "User-Agent" = "PowerShell"
 }
