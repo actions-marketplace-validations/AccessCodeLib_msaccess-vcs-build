@@ -1,9 +1,14 @@
 param(
     [string]$SourceDir = "\source",
 	[string]$TargetDir = "",
-    [bool]$Compile = $false, # Default to "false" if not specified
+    [string]$Compile = 'false', # Default to "false" if not specified
     [string]$vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest" # empty = don't install msacess-vcs
 )
+
+[bool]$CompileBool = $false
+if ($Compile -and $Compile.ToLower() -eq "true") {
+    $CompileBool = $true
+}
 
 if ($vcsUrl -gt "") {
 	Write-Host "Install msaccess-vcs"
@@ -23,7 +28,7 @@ if ([string]::IsNullOrEmpty($accdbPath)) {
     exit 1
 }
 
-if ($Compile) {
+if ($CompileBool) {
 	Write-Host "compile accdb"
 	$compileResult = . "$PSScriptRoot/scripts/compile-accdb.ps1" -SourceFile "$accdbPath"
 	# Write-Host "accdb: $($result.AccdbPath)"
