@@ -8,6 +8,8 @@ param(
 # $vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest"
 # $vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
 
+Write-Host "Download url: $vcsUrl"
+
 $headers = @{
     "User-Agent" = "PowerShell"
 }
