@@ -1,6 +1,6 @@
 param(
     [string]$SourceDir = "\source",
-    [string]$Compile = "false" # Default to "false" if not specified,
+    [string]$Compile = "false", # Default to "false" if not specified
     [string]$vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest"
 )
 
