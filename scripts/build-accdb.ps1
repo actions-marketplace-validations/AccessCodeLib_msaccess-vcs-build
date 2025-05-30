@@ -94,4 +94,4 @@ if (
     Copy-Item -Path ".\$builtFileName" -Destination "$TargetDir\$FileName"
 	Write-Host ""
 }
-Write-Host "Build accdb completed" -NoNewline
+Write-Host "Build accdb completed: $FileName"
