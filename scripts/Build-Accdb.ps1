@@ -61,6 +61,7 @@ while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)
     Write-Host "." -NoNewline
 }
 $stopwatch.Stop()
+Start-Sleep -Seconds 20
 Write-Host " completed"
 
 $builtFileName = $access.CurrentProject.Name
