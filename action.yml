@@ -28,7 +28,7 @@ runs:
   steps:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: pwsh
-      run: '${{ github.action_path }}/Build.ps1 -SourceDir "${{ inputs.source-dir }}" -TargetDir "${{ inputs.target-dir }}" -Compile ${{ inputs.compile }} -vcsUrl "${{ inputs.vcs-url }}"'
+      run: '${{ github.action_path }}/Build.ps1 -SourceDir "${{ inputs.source-dir }}" -TargetDir "${{ inputs.target-dir }}" -Compile "${{ inputs.compile }}" -vcsUrl "${{ inputs.vcs-url }}"'
 
 outputs:
   result:
