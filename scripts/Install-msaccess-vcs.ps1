@@ -2,7 +2,7 @@
 # install msaccess-vcs
 #
 param(
-    [string]$vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest"
+    [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest"
 )
 # URL
 # $vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest"
@@ -38,4 +38,4 @@ $addInPath = Join-Path $addInFolder $addInFileName
 Write-Host "msaccess-vcs installed: $addInPath"
 
 Write-Host "Set trusted location: $addInFolder"
-. "$PSScriptRoot/set-trusted-location.ps1" "VCS-add-in-folder" "$addInFolder"
+. "$PSScriptRoot/Set-TrustedLocation.ps1" "VCS-add-in-folder" "$addInFolder"
