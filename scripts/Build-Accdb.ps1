@@ -43,7 +43,7 @@ Write-Host "Source: $SourceDir"
 Write-Host ""
 
 Write-Host "Start msaccess-vcs build " -NoNewline
-$access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
+# $access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
 Write-Host "." -NoNewline
 $null = $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
 
