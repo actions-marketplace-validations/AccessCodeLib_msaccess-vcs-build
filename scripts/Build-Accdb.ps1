@@ -47,6 +47,9 @@ $access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
 
 $access.VBE.MainWindow.Visible = $true
 
+$projectName = $access.CurrentProject.FullName
+Write-Host "Project: $projectName"
+
 Write-Host "." -NoNewline
 $null = $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
 
