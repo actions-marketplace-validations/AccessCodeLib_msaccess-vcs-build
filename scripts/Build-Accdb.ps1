@@ -44,9 +44,6 @@ Write-Host ""
 
 Write-Host "Start msaccess-vcs build " -NoNewline
 $access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
-
-$access.VBE.MainWindow.Visible = $true
-
 Write-Host "." -NoNewline
 $null = $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
 
@@ -64,8 +61,6 @@ while (($access.Forms.Count -gt 0) -and ($stopwatch.Elapsed.TotalSeconds -lt 30)
     Write-Host "." -NoNewline
 }
 $stopwatch.Stop()
-Write-Host " wait 20sec" -NoNewline
-Start-Sleep -Seconds 20
 Write-Host " completed"
 
 $builtFileName = $access.CurrentProject.Name
