@@ -44,15 +44,6 @@ Write-Host ""
 
 Write-Host "Start msaccess-vcs build " -NoNewline
 $access.Run("$addInProcessPath.SetInteractionMode", [ref] 1)
-
-$access.VBE.MainWindow.Visible = $true
-
-$uc = $access.UserControl
-Write-Host "User control: $uc"
-
-$projectName = $access.CurrentProject.FullName
-Write-Host "Project: $projectName"
-
 Write-Host "." -NoNewline
 $null = $access.Run("$addInProcessPath.HandleRibbonCommand", [ref] "btnBuild", [ref] "$SourceDir")
 
