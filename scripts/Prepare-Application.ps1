@@ -105,16 +105,15 @@ if (-not ([System.IO.Path]::IsPathRooted($fullPath))) {
     $fullPath = Join-Path -Path (Get-Location) -ChildPath $fullPath.TrimStart('\','/','.')
 }
 
-$access = New-Object -ComObject Access.Application
+[object]$access = $null
+[object]$db = $null
 
 try {
-    $access.OpenCurrentDatabase($fullPath)
-    $db = $access.CurrentDb()
 
-    # Write-Host "db.Name: $($db.Name)"  
-    
-     # Run procedures from config
+# Run procedures from config
     if ($config.Procedures -and $config.Procedures.Count -gt 0) {
+        $access = New-Object -ComObject Access.Application
+        $access.OpenCurrentDatabase($fullPath)
         foreach ($procedure in $config.Procedures) {
             if (-not $procedure.Name) {
                 Write-Error "Procedure name is missing in the configuration."
@@ -131,29 +130,35 @@ try {
             }
             Invoke-Procedure -access $access -ProcedureName $procedure.Name -Arguments $Parameters    
         }
-    } else {
+    }
+    else {
         Write-Host "No procedures to run."
     }
 
-    # Set database properties from config
+# Set database properties from config
     if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
-       foreach ($property in $config.DatabaseProperties) {
+        if ($access) {
+            $db = $access.CurrentDb()
+        }
+        else { # use DAO.Database
+            $daoEngine = New-Object -ComObject DAO.DBEngine.120
+            $db = $daoEngine.OpenDatabase($fullPath)
+        }
+
+        foreach ($property in $config.DatabaseProperties) {
             $propertyName = $property.Name
             $propertyType = [PropertyType]::Parse([PropertyType], $property.Type)
             $propertyValue = $property.Value
 
             Write-Host "Setting property '$propertyName' of type '$($propertyType)' to '$propertyValue'"
-
             Set-DbProperty -db $db -PropertyName $propertyName -PropertyType $propertyType -PropertyValue $propertyValue
         }
     }
     else {
         Write-Host "No database properties to set."
     }
-    
 }
 catch {
-    # return error message
     $errorCode = $null
     if ($_.Exception.InnerException -and $_.Exception.InnerException.ErrorCode) {
         $errorCode = $_.Exception.InnerException.ErrorCode
@@ -165,14 +170,24 @@ catch {
     exit 1
 }
 finally {
-    $access.DoCmd.CloseDatabase()
-    $access.Quit()
-    [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($db)
-    [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
-    Remove-Variable -Name access, db -ErrorAction SilentlyContinue
+    if ($db) {
+        if (-not $access) {
+            # If we used DAO, we need to close the database
+            $db.Close()
+        }
+        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($db)
+        Remove-Variable -Name db -ErrorAction SilentlyContinue
+    }
+    if ($daoEngine) {
+        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($daoEngine)
+        Remove-Variable -Name daoEngine -ErrorAction SilentlyContinue
+    }
+    if ($access) {
+        $access.CloseCurrentDatabase()
+        $access.Quit()
+        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
+        Remove-Variable -Name access -ErrorAction SilentlyContinue
+    }
     [GC]::Collect()
     [GC]::WaitForPendingFinalizers()
 }
-
-
-
