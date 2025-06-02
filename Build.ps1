@@ -2,7 +2,7 @@ param(
     [string]$SourceDir = "\source",
     [string]$TargetDir = "",
     [string]$Compile = 'false', # Default to "false" if not specified
-    [string]$vcsUrl = "https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest" # empty = don't install msacess-vcs
+    [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest" # empty = don't install msacess-vcs
 )
 
 [bool]$CompileBool = $false
