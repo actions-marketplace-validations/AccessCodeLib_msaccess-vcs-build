@@ -79,8 +79,6 @@ Write-Host "." -NoNewline
 [GC]::WaitForPendingFinalizers()
 Write-Host " completed"
 Write-Host ""
-Write-Host "Built: $builtFileName ($builtFilePath)"
-
 
 if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 	Write-Host "Built: $builtFileName ($builtFilePath)"
