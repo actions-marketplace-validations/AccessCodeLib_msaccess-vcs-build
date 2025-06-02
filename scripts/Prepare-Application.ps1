@@ -93,6 +93,13 @@ function Invoke-Procedure {
 if (-not $ConfigFile) {
     $ConfigFile = Join-Path -Path (Get-Location) -ChildPath "config.json"
 }
+
+if (
+    -not ([System.IO.Path]::IsPathRooted($ConfigFile))
+) {
+    $ConfigFile = Join-Path -Path (Get-Location) -ChildPath $ConfigFile.TrimStart('\','/','.')
+}
+
 if (-not (Test-Path -Path $ConfigFile)) {
     Write-Error "Config file not found: $ConfigFile"
     exit 1
