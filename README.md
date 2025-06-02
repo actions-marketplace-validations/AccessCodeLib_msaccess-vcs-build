@@ -44,4 +44,9 @@ jobs:
 ```
 
 ### Example YAML files
-* [josef-poetzl/msaccess-vcs-addin Build-self-hosted (on release)](https://github.com/josef-poetzl/msaccess-vcs-addin/blob/main/.github/workflows/build-for-release.yml)
+#### GitHub
+* [josef-poetzl/msaccess-vcs-addin: Build-self-hosted (on release)](https://github.com/josef-poetzl/msaccess-vcs-addin/blob/main/.github/workflows/build-for-release.yml)
+* [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.github/workflows/Build-self-hosted-O64.yml)
+
+#### Azure DevOps
+* [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.azure-devops/azure-pipelines.yml)
