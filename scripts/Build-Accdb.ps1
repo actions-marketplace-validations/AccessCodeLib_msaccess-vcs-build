@@ -64,6 +64,7 @@ $stopwatch.Stop()
 Write-Host " completed"
 
 $builtFileName = $access.CurrentProject.Name
+$builtFilePath = $access.CurrentProject.FullName
 
 Start-Sleep -Seconds 1
 Write-Host "Close Access " -NoNewline
@@ -93,11 +94,11 @@ if ($FileName -eq "") {
     $FileName = $builtFileName
 }
 
-$targetFilePath = $FileName
+$targetFilePath = $builtFilePath
 if ($TargetDir -gt "") {
 	Write-Host "Copy accdb to $TargetDir"
 	New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
-    Copy-Item -Path ".\$builtFileName" -Destination "$TargetDir\$FileName"
+    Copy-Item -Path $builtFilePath -Destination "$TargetDir\$FileName"
 	Write-Host ""
 	$targetFilePath = "$TargetDir\$FileName"
 } elseif ($FileName -ne $builtFileName) {
