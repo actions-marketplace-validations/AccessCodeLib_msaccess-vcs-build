@@ -57,4 +57,6 @@ jobs:
 It is also possible to use only the PowerShell scripts to execute the build process locally.
 
 #### Example
-`.\Build.ps1 -SourceDir "source" -Compile $true -AppConfigFile ".\Application-Config.json"`
+```powershell
+.\Build.ps1 -SourceDir "source" -Compile $true -AppConfigFile ".\Application-Config.json"
+```
