@@ -17,13 +17,13 @@ if ($SetTrustedLocation -and $SetTrustedLocation.ToLower() -eq "true") {
     $SetTrustedLocationBool = $true
 }
 
-if (-not $TargetDir) {
-    $TargetDir = (Get-Location).Path
-}
-else {
+if ($TargetDir -gt "") {
     if (-not ([System.IO.Path]::IsPathRooted($TargetDir))) {
         $TargetDir = Join-Path -Path (Get-Location) -ChildPath $TargetDir.TrimStart('\','/','.')
     }
+}
+else {
+    $TargetDir = (Get-Location).Path
 }
 
 $curDir = $(Get-Location)
