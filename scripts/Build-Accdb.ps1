@@ -4,7 +4,9 @@
 param(
     [string]$SourceDir,
 	[string]$TargetDir = "",
-	[string]$FileName = "" # empty = name from vcs options
+	[string]$FileName = "", # empty = name from vcs options
+    [string]$VcsAddInPath = "" # empty = use default path (installed version)
+   
 )
 
 $tempFileName = "VcsBuildTempApp"
@@ -13,7 +15,7 @@ if ($FileName -gt "") {
     $accdbFileName = $FileName
 }
 
-$curDir = $(pwd)
+$curDir = $(Get-Location)
 $accdbPath = "$curDir\$accdbFileName.accdb"
 
 # open/create access file
@@ -26,9 +28,21 @@ else {
 	$access.OpenCurrentDatabase($accdbPath)
 }
 
-$appdata = $env:APPDATA
-$addInFolder = Join-Path $appdata "MSAccessVCS"
-$addInProcessPath = Join-Path $addInFolder "Version Control"
+[string]$addInProcessPath = ""
+if ($VcsAddInPath -gt "") {
+    $addInProcessPath = [System.IO.Path]::ChangeExtension($VcsAddInPath, "").TrimEnd('.')   
+}
+else {
+    $appdata = $env:APPDATA
+    $addInFolder = Join-Path $appdata "MSAccessVCS"
+    $addInProcessPath = Join-Path $addInFolder "Version Control"
+    $VcsAddInPath = "$addInProcessPath.accda"
+}
+if (-not (Test-Path $VcsAddInPath)) {
+    Write-Host "msaccess-vcs add-in not found: $VcsAddInPath"
+    Write-Host "Please install msaccess-vcs add-in first."
+    exit 1
+}
 
 if (
     -not ([System.IO.Path]::IsPathRooted($SourceDir)) -or
@@ -38,7 +52,7 @@ if (
 }
 
 Write-Host "Add-in path: $addInProcessPath"
-Write-Host "Current path: $(pwd)"
+Write-Host "Current path: $curDir"
 Write-Host "Source: $SourceDir"
 Write-Host ""
 
