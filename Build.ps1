@@ -46,7 +46,7 @@ if ($vcsUrl -gt "") {
 	Write-Host "-----"
 }
 
-Write-Host "Build accdb"
+Write-Host "Build accdb - TargetDir: $TargetDir"
 $accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir $TargetDir -VcsAddInPath $vcsAddInPath
 Write-Host "-----"
 
