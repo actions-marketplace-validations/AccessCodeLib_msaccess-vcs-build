@@ -88,6 +88,13 @@ function Invoke-Procedure {
 
 }
 
+function SafeReleaseComObject($comObject) {
+    if ($null -ne $comObject -and $comObject -is [System.__ComObject]) {
+        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($comObject)
+    }
+}
+
+
 # read config file
 if (-not $ConfigFile) {
     $ConfigFile = Join-Path -Path (Get-Location) -ChildPath "config.json"
@@ -146,7 +153,7 @@ try {
 # Set database properties from config
     if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
         if ($access) {
-            $db = $access.CurrentDb
+            $db = $access.CurrentDb()
         }
         else { # use DAO.Database
             $daoEngine = New-Object -ComObject DAO.DBEngine.120
@@ -183,17 +190,18 @@ finally {
             # If we used DAO, we need to close the database
             $db.Close()
         }
-        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($db)
+        SafeReleaseComObject $db
         Remove-Variable -Name db -ErrorAction SilentlyContinue
+        
     }
     if ($daoEngine) {
-        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($daoEngine)
+        SafeReleaseComObject $daoEngine
         Remove-Variable -Name daoEngine -ErrorAction SilentlyContinue
     }
     if ($access) {
         $access.CloseCurrentDatabase()
         $access.Quit()
-        [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
+        SafeReleaseComObject $access
         Remove-Variable -Name access -ErrorAction SilentlyContinue
     }
     [GC]::Collect()
