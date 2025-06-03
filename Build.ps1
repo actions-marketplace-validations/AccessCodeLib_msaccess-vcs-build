@@ -18,7 +18,7 @@ if ($SetTrustedLocation -and $SetTrustedLocation.ToLower() -eq "true") {
 }
 
 Write-Host "TargetDir param: $TargetDir"
-if ($TargetDir -gt "") {
+if (-not [string]::IsNullOrEmpty($TargetDir)) {
     if (-not ([System.IO.Path]::IsPathRooted($TargetDir))) {
         $TargetDir = Join-Path -Path (Get-Location) -ChildPath $TargetDir.TrimStart('\','/','.')
     }
@@ -26,6 +26,7 @@ if ($TargetDir -gt "") {
 else {
     $TargetDir = (Get-Location).Path
 }
+Write-Host "TargetDir full path: $TargetDir"
 
 $curDir = $(Get-Location)
 $tempTrustedLocationName = "VCS-build-folder_"  + (Get-Date -Format "yyyyMMddHHmmss")
