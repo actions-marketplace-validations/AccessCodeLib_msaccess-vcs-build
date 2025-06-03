@@ -24,7 +24,7 @@ if (-not [string]::IsNullOrEmpty($TargetDir)) {
     }
 }
 else {
-    $TargetDir = (Get-Location).Path
+    $TargetDir = (Get-Location)
 }
 Write-Host "TargetDir full path: $TargetDir"
 
@@ -41,13 +41,13 @@ if ($SetTrustedLocationBool)
 if ($vcsUrl -gt "") {
 	Write-Host "Install msaccess-vcs"
     $vcsTargetDir = $curDir.Path
-	$vcsInstallData = . "$PSScriptRoot/scripts/Install-msaccess-vcs.ps1" -vcsUrl "${vcsUrl}" -TargetDir "$vcsTargetDir" -SetTrustedLocation $false
+	$vcsInstallData = . "$PSScriptRoot/scripts/Install-msaccess-vcs.ps1" -vcsUrl "${vcsUrl}" -AddInTargetDir "$vcsTargetDir" -SetTrustedLocation $false
     $vcsAddInPath = $vcsInstallData.AddInPath
 	Write-Host "-----"
 }
 
 Write-Host "Build accdb - TargetDir: $TargetDir"
-$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir $TargetDir -VcsAddInPath $vcsAddInPath
+$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
 Write-Host "-----"
 
 $accdbPath = "$accdbPath" # simple join if array

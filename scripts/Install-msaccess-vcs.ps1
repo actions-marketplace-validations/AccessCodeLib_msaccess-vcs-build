@@ -3,7 +3,7 @@
 #
 param(
     [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest",
-    [string]$TargetDir = "", # empty = use current directory
+    [string]$AddInTargetDir = "", # empty = use current directory
     [bool]$SetTrustedLocation = $true # set trusted location for add-in folder
 )
 # URL
@@ -30,15 +30,15 @@ Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
 Write-Host "zip file downloaded from $zipUrl to $zipFile"
 
 # extrat to local folder (don't use original MSAccessVCS folder)
-if (-not $TargetDir) {
-    $TargetDir = (Get-Location).Path
+if ([string]::IsNullOrEmpty($AddInTargetDir)) {
+    $AddInTargetDir = (Get-Location).Path
 }
 else {
-    if (-not ([System.IO.Path]::IsPathRooted($TargetDir))) {
-        $TargetDir = Join-Path -Path (Get-Location) -ChildPath $TargetDir.TrimStart('\','/','.')
+    if (-not ([System.IO.Path]::IsPathRooted($AddInTargetDir))) {
+        $AddInTargetDir = Join-Path -Path (Get-Location) -ChildPath $AddInTargetDir.TrimStart('\','/','.')
     }
 }
-$addInFolder = Join-Path -Path $TargetDir -ChildPath "MSAccessVCS"
+$addInFolder = Join-Path -Path $AddInTargetDir -ChildPath "MSAccessVCS"
 Expand-Archive -Path $zipFile -DestinationPath $addInFolder -Force
 
 $addInFileName = "Version Control.accda"
