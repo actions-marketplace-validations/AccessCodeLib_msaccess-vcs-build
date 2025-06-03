@@ -33,7 +33,7 @@ $tempTrustedLocationName = "VCS-build-folder_"  + (Get-Date -Format "yyyyMMddHHm
 if ($SetTrustedLocationBool)
 {
     Write-Host "Set trusted location: $curDir"
-    . "$PSScriptRoot/scripts/Set-TrustedLocation.ps1" "$tempTrustedLocationName" "$curDir"
+    & "$PSScriptRoot/scripts/Set-TrustedLocation.ps1" "$tempTrustedLocationName" "$curDir"
     Write-Host "-----"
 }
 
@@ -41,13 +41,13 @@ if ($SetTrustedLocationBool)
 if ($vcsUrl -gt "") {
 	Write-Host "Install msaccess-vcs"
     $vcsTargetDir = $curDir.Path
-	$vcsInstallData = . "$PSScriptRoot/scripts/Install-msaccess-vcs.ps1" -vcsUrl "${vcsUrl}" -AddInTargetDir "$vcsTargetDir" -SetTrustedLocation $false
+	$vcsInstallData = & "$PSScriptRoot/scripts/Install-msaccess-vcs.ps1" -vcsUrl "${vcsUrl}" -TargetDir "$vcsTargetDir" -SetTrustedLocation $false
     $vcsAddInPath = $vcsInstallData.AddInPath
 	Write-Host "-----"
 }
 
 Write-Host "Build accdb - TargetDir: $TargetDir"
-$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
+$accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
 Write-Host "-----"
 
 $accdbPath = "$accdbPath" # simple join if array
@@ -63,7 +63,7 @@ $accFilePath = $accdbPath
 
 if ($CompileBool) {
     Write-Host "compile accdb"
-    $compileResult = . "$PSScriptRoot/scripts/Compile-Accdb.ps1" -SourceFile "$accdbPath"
+    $compileResult = & "$PSScriptRoot/scripts/Compile-Accdb.ps1" -SourceFile "$accdbPath"
     # Write-Host "accdb: $($result.AccdbPath)"
     # Write-Host "accde: $($result.AccdePath)"
     if (-not $compileResult.Success) {
@@ -76,7 +76,7 @@ if ($CompileBool) {
 
 if ($AppConfigFile -gt "") {
     Write-Host "Run procedures from config file: $AppConfigFile"
-    . "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accFilePath" -ConfigFile "$AppConfigFile"
+    & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accFilePath" -ConfigFile "$AppConfigFile"
     Write-Host "-----"
 }   
 
@@ -84,7 +84,7 @@ if ($AppConfigFile -gt "") {
 if ($SetTrustedLocationBool)
 {
     Write-Host "Remove trusted location: $curDir"
-    . "$PSScriptRoot/scripts/Remove-TrustedLocation.ps1" "$tempTrustedLocationName" 
+    & "$PSScriptRoot/scripts/Remove-TrustedLocation.ps1" "$tempTrustedLocationName" 
     Write-Host "-----"
 }
 
