@@ -3,7 +3,9 @@ CI/CD - Build accdb/accde from source (msaccess-vcs exports)
 
 Thanks to Martin Leduc (DecimalTurn) for [VBA-Build](https://github.com/DecimalTurn/VBA-Build), which was a great reference.
 
-## action.yml
+## Github workflow / Azure devops pipeline
+
+### action.yml
 ```
 inputs:
   source-dir:
@@ -50,3 +52,9 @@ jobs:
 
 #### Azure DevOps
 * [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.azure-devops/azure-pipelines.yml)
+
+## PowerShell only
+It is also possible to use only the PowerShell scripts to execute the build process locally.
+
+#### Example
+`.\Build.ps1 -SourceDir "source" -Compile $true -AppConfigFile ".\Application-Config.json"`
