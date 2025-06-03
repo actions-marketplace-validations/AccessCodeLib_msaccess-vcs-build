@@ -47,7 +47,7 @@ if ($vcsUrl -gt "") {
 }
 
 Write-Host "Build accdb"
-$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir "${SourceDir}" -TargetDir "$TargetDir" -VcsAddInPath "$vcsAddInPath" 
+$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir $TargetDir -VcsAddInPath $vcsAddInPath
 Write-Host "-----"
 
 $accdbPath = "$accdbPath" # simple join if array
