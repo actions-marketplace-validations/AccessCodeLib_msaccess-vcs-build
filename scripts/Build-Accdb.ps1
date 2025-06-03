@@ -9,8 +9,8 @@ param(
    
 )
 
-$tempFileName = "VcsBuildTempApp"
-$accdbFileName = $tempFileName
+[string]$tempFileName = "VcsBuildTempApp"
+[string]$accdbFileName = $tempFileName
 if ($FileName -gt "") {
     $accdbFileName = $FileName
 }
@@ -54,6 +54,7 @@ if (
 Write-Host "Add-in path: $addInProcessPath"
 Write-Host "Current path: $curDir"
 Write-Host "Source: $SourceDir"
+Write-Host "TargetDir: $TargetDir"
 Write-Host ""
 
 Write-Host "Start msaccess-vcs build " -NoNewline
@@ -103,12 +104,13 @@ if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 
 
 # copy file to TargetDir
-if ($FileName -eq "") {
+if ([string]::IsNullOrEmpty($FileName)) {
     $FileName = $builtFileName
 }
 
 $targetFilePath = $builtFilePath
-if ($TargetDir -gt "") {
+$builtFilePathDir = [System.IO.Path]::GetDirectoryName($builtFilePath)
+if (($TargetDir -gt "") -and ($TargetDir -ne  $builtFilePathDir) ) {
 	Write-Host "Copy accdb to $TargetDir"
 	New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
     Copy-Item -Path $builtFilePath -Destination "$TargetDir\$FileName"
@@ -116,15 +118,15 @@ if ($TargetDir -gt "") {
 	$targetFilePath = "$TargetDir\$FileName"
 } elseif ($FileName -ne $builtFileName) {
 	Rename-Item -Path ".\$builtFileName" -NewName $FileName -Force
-	Write-Host ""
 }
 
-if ( -not ([System.IO.Path]::IsPathRooted($targetFilePath))) {
-    $targetFilePath = Join-Path -Path (Get-Location) -ChildPath $targetFilePath.TrimStart('\','/','.')
+$tempFilePath = Join-Path -Path $curDir -ChildPath ([System.IO.Path]::ChangeExtension($tempFileName, "accdb"))
+if (Test-Path $tempFilePath) {
+    Remove-Item -Path $tempFilePath -Force  
 }
 
 #Write-Host "::notice::Build accdb completed: $FileName"
 #Write-Host "|$targetFilePath|"
 #Write-Host ""
 #
-return $targetFilePath
+return "$targetFilePath"

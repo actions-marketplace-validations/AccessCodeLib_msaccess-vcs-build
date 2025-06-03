@@ -55,7 +55,6 @@ function Invoke-Procedure {
         [object[]]$Arguments
     )
 
-    # $access.Run("ProcedureName" mit passenden Argumenten
     if (-not $access) {
         Write-Error "Access application object is null."
         return
@@ -114,6 +113,8 @@ if (-not ([System.IO.Path]::IsPathRooted($fullPath))) {
 
 [object]$access = $null
 [object]$db = $null
+
+Write-Host "Config $fullPath"
 
 try {
 

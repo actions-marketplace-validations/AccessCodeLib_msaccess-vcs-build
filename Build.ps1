@@ -45,11 +45,12 @@ if ($vcsUrl -gt "") {
 }
 
 Write-Host "Build accdb"
-$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir "${SourceDir}" -TargetDir "${TargetDir}" -VcsAddInPath "$vcsAddInPath" -FileName "VcsBuildTempApp"
+$accdbPath = . "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir "${SourceDir}" -TargetDir "$TargetDir" -VcsAddInPath "$vcsAddInPath" 
 Write-Host "-----"
 
 $accdbPath = "$accdbPath" # simple join if array
 $accdbPath = $accdbPath.Trim()
+Write-Host "Build file: $accdbPath"
 
 if ([string]::IsNullOrEmpty($accdbPath)) {
     Write-Error "accdbPath is null (missing return value)"
