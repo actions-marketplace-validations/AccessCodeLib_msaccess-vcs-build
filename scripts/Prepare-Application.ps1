@@ -146,7 +146,7 @@ try {
 # Set database properties from config
     if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
         if ($access) {
-            $db = $access.CurrentDb()
+            $db = $access.CurrentDb
         }
         else { # use DAO.Database
             $daoEngine = New-Object -ComObject DAO.DBEngine.120
