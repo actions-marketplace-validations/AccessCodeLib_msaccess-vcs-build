@@ -1,0 +1,41 @@
+name: "msaccess-vcs Build"
+description: "Build accdb/accde file from source (msaccess-vcs exports)."
+
+branding:
+  icon: 'code'
+  color: 'blue' 
+
+inputs:
+  source-dir:
+    description: 'msaccess-vcs source folder'
+    required: false
+    default: 'source'
+  target-dir:
+    description: 'target dir for binary file'
+    required: false
+    default: ''
+  compile:
+    description: 'create accde file'
+    required: false
+    default: false
+  app-config:
+    description: 'application config file (set database properties, run procedures, etc.)'
+    required: false
+    default: ''
+  vcs-url:
+    description: 'msaccess-vcs release url'
+    required: false
+    default: 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest'
+    
+runs:
+  using: "composite"
+  steps:
+    - name: "Build accdb/accde from msaccess-vcs export"
+      shell: cmd
+      run: |
+        C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${{ github.action_path }}\Build.ps1" -SourceDir "${{ inputs.source-dir }}" -TargetDir "${{ inputs.target-dir }}" -Compile "${{ inputs.compile }}" -AppConfigFile "${{ inputs.app-config }}" -vcsUrl "${{ inputs.vcs-url }}"
+
+outputs:
+  result:
+    description: "The result of the build process."
+    value: "success"
