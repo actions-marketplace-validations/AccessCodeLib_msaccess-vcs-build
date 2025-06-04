@@ -33,7 +33,7 @@ runs:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: cmd
       run: |
-        C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${{ github.action_path }}\Build.ps1" -SourceDir "${{ inputs.source-dir }}" -TargetDir "${{ inputs.target-dir }}" -Compile "${{ inputs.compile }}" -AppConfigFile "${{ inputs.app-config }}" -vcsUrl "${{ inputs.vcs-url }}"
+        C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File "${{ github.action_path }}\..\Build.ps1" -SourceDir "${{ inputs.source-dir }}" -TargetDir "${{ inputs.target-dir }}" -Compile "${{ inputs.compile }}" -AppConfigFile "${{ inputs.app-config }}" -vcsUrl "${{ inputs.vcs-url }}"
 
 outputs:
   result:
