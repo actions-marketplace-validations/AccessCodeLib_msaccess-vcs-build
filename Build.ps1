@@ -1,8 +1,9 @@
 param(
-    [string]$SourceDir = "\source",
-    [string]$TargetDir = "",
+    [string]$SourceDir = "", # empty use parameter SourceFile, don't use msaccess-vcs
+    [string]$SourceFile = "", # empty = name from vcs options
+    [string]$TargetDir = "", # Folder for output file, default (empty): current folder 
     [string]$Compile = 'false', # Default to "false" if not specified
-    [string]$AppConfigFile = "", # Default "" => don't change database porperties etc.
+    [string]$AppConfigFile = "", # Default "" => don't change database properties etc.
     [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest", # empty = don't install msacess-vcs
     [string]$SetTrustedLocation = 'true' # set trusted location for current folder
 )
@@ -16,6 +17,18 @@ if ($Compile -and $Compile.ToLower() -eq "true") {
 if ($SetTrustedLocation -and $SetTrustedLocation.ToLower() -eq "true") {
     $SetTrustedLocationBool = $true
 }
+
+if ([string]::IsNullOrEmpty($SourceDir) -and [string]::IsNullOrEmpty($SourceFile)) {
+    Write-Error "SourceDir or SourceFile must be specified"
+    exit 1  
+}
+
+if ([string]::IsNullOrEmpty($SourceDir) ) {
+    $vcsUrl = "" # don't install msaccess-vcs if SourceDir is not specified
+
+
+}
+
 
 if (-not [string]::IsNullOrEmpty($TargetDir)) {
     if (-not ([System.IO.Path]::IsPathRooted($TargetDir))) {
@@ -40,22 +53,40 @@ if ($vcsUrl -gt "") {
 	Write-Host "Install msaccess-vcs"
     $vcsTargetDir = $curDir.Path
 	$vcsInstallData = & "$PSScriptRoot/scripts/Install-msaccess-vcs.ps1" -vcsUrl "${vcsUrl}" -TargetDir "$vcsTargetDir" -SetTrustedLocation $false
+    
+    if (-not $vcsInstallData.Success) {
+        Write-Error "Failed to install msaccess-vcs add-in"
+        exit 1
+    }
+    
     $vcsAddInPath = $vcsInstallData.AddInPath
 	Write-Host "-----"
 }
 
-Write-Host "Build accdb - TargetDir: $TargetDir"
-$accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
+if (-not ([string]::IsNullOrEmpty($SourceDir))) {
+    Write-Host "Build accdb - TargetDir: $TargetDir"
+    $accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
+    $accdbPath = "$accdbPath" # simple join if array
+    $accdbPath = $accdbPath.Trim()
+    if (([string]::IsNullOrEmpty($accdbPath)) -or -not (Test-Path $accdbPath)) {
+        Write-Error "Failed to create accdb file"
+        exit 1
+    }
+    Write-Host "Build file: $accdbPath"
+} 
+else { # use SourceFile
+    if (-not ([System.IO.Path]::IsPathRooted($SourceFile))) {
+        $SourceFile = Join-Path -Path (Get-Location) -ChildPath $SourceFile.TrimStart('\','/','.')
+    }
+    Write-Host "Use SourceFile: $SourceFile"
+    if (-not (Test-Path $SourceFile)) {
+        Write-Error "Source file not found: $SourceFile"
+        exit 1
+    }
+    $accdbPath = $SourceFile
+}   
 Write-Host "-----"
 
-$accdbPath = "$accdbPath" # simple join if array
-$accdbPath = $accdbPath.Trim()
-Write-Host "Build file: $accdbPath"
-
-if ([string]::IsNullOrEmpty($accdbPath)) {
-    Write-Error "accdbPath is null (missing return value)"
-    exit 1
-}
 
 $accFilePath = $accdbPath
 
