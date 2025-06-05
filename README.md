@@ -77,7 +77,7 @@ Steps:
 1. download msacesss-vcs
 2. build accdb from source (use file name from msaccess-vcs property file)
 3. compile accdb to accde
-4. config accde with settings from Application-Config.json
+4. config accde with settings from [Application-Config.json](https://github.com/AccessCodeLib/msaccess-vcs-build/blob/main/examples/Prepare-Application-Config.json)
 
 #### Compile accdb file
 ```powershell
