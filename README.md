@@ -23,7 +23,8 @@ inputs:
   vcs-url:
     description: 'msaccess-vcs release url'
     required: false
-    default: 'https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest'
+    default: 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest'
+    # remove to 'https://api.github.com/repos/joyfullservice/msaccess-vcs-addin/releases/latest' if Commit db07ef2 released
 ```
 
 Example call:
@@ -49,14 +50,39 @@ jobs:
 #### GitHub
 * [josef-poetzl/msaccess-vcs-addin: Build-self-hosted (on release)](https://github.com/josef-poetzl/msaccess-vcs-addin/blob/main/.github/workflows/build-for-release.yml)
 * [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.github/workflows/Build-self-hosted-O64.yml)
+* [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64-O32](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.github/workflows/Build-self-hosted-O64-O32.yml): call 64 and 32 runner to get 32 and 64 bit accde
 
 #### Azure DevOps
-* [AccessCodeLib/BuildAccdeExample: Build-self-hosted-O64](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.azure-devops/azure-pipelines.yml)
+* [AccessCodeLib/BuildAccdeExample: Build-self-hosted-MultiBit](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.azure-devops/azure-pipelines.yml)
 
-## PowerShell only
+## PowerShell only - Build.ps1
 It is also possible to use only the PowerShell scripts to execute the build process locally.
 
-#### Example
+### Parameters
+* [string]$SourceDir = "", # empty use parameter SourceFile, don't use msaccess-vcs
+* [string]$SourceFile = "", # empty = name from vcs options
+* [string]$TargetDir = "", # Folder for output file, default (empty): current folder 
+* [string]$Compile = 'false', # Default to "false" if not specified
+* [string]$AppConfigFile = "", # Default "" => don't change database properties etc.
+* [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest", # empty = don't install msacess-vcs
+* [string]$SetTrustedLocation = 'true' # set trusted location for current folder
+
+### Examples
+
+#### Build from source
 ```powershell
 .\Build.ps1 -SourceDir "source" -Compile $true -AppConfigFile ".\Application-Config.json"
 ```
+Steps:
+1. download msacesss-vcs
+2. build accdb from source (use file name from msaccess-vcs property file)
+3. compile accdb to accde
+4. config accde with settings from Application-Config.json
+
+#### Compile accdb file
+```powershell
+.\Build.ps1 -SourceFile "Test.accdb" -Compile $true -AppConfigFile ".\Application-Config.json"
+```
+Steps:
+1. compile Test.accdb to Test.accde
+2. config accde with settings from Application-Config.json
