@@ -5,7 +5,6 @@ param(
     [string]$Compile = 'false', # Default to "false" if not specified
     [string]$AppConfigFile = '', # Default "" => don't change database properties etc.
     [string]$RunAccUnitTests = 'false', # path to msaccess-vcs add-in, empty = don't use msaccess-vcs
-    [string]$InstallAccUnit = 'true', # false = use installed AccUnitLoader.accda, true = install AccUnitLoader.accda (latest version)
     [string]$vcsUrl = 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest', # empty = don't install msacess-vcs
     [string]$SetTrustedLocation = 'true' # set trusted location for current folder
 )
@@ -31,11 +30,6 @@ if ($SetTrustedLocation -and $SetTrustedLocation.ToLower() -eq "true") {
 [bool]$RunAccUnitTestBool = $false
 if ($RunAccUnitTests -and $RunAccUnitTests.ToLower() -eq "true") {
     $RunAccUnitTestBool = $true
-}
-
-[bool]$InstallAccUnitBool = $false
-if ($RunAccUnitTestBool -and $InstallAccUnit -and $InstallAccUnit.ToLower() -eq "true") {
-    $InstallAccUnitBool = $true
 }
 
 if ([string]::IsNullOrEmpty($SourceDir) ) {
@@ -78,20 +72,6 @@ if ($vcsUrl -gt "") {
 	Write-Host "-----"
 }
 
-[string]$accUnitAddInPath = ""
-if ($InstallAccUnitBool) {
-	Write-Host "Install AccUnit"
-    $AccUnitRootDir = $curDir.Path
-	$accUnitInstallData = & "$PSScriptRoot/scripts/Install-AccUnit.ps1" -TargetRootDir "$AccUnitRootDir" -SetTrustedLocation $false
-    
-    if (-not $accUnitInstallData.Success) {
-        Write-Error "Failed to install AccUnit add-in"
-        exit 1
-    }
-    
-    $accUnitAddInPath = $accUnitInstallData.AddInPath
-	Write-Host "-----"
-}
 
 # Build accdb file
 if (-not ([string]::IsNullOrEmpty($SourceDir))) {
