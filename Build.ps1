@@ -122,33 +122,28 @@ if ($AppConfigFile -gt "") {
 
 # Run AccUnit tests
 if ($RunAccUnitTestBool) {
-    if (-not ([string]::IsNullOrEmpty($accUnitAddInPath))) {
-        Write-Host "Run AccUnit tests"
 
-        if (-not (Test-Path $accdbPath)) {
-            Write-Error "Accdb file not found: $accdbPath"
-            exit 1
-        }
-        $testAccdbPath = [System.IO.Path]::GetFileName($accdbPath)
-        $testAccdbPath = Join-Path -Path (Get-Location) -ChildPath $testAccdbPath
-        if (-not (Test-Path $testAccdbPath)) {
-            Copy-Item -Path $accdbPath -Destination $testAccdbPath -Force
-        }
+    Write-Host "Run AccUnit tests"
 
-        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath"
-        if (-not $testResult.Success) {
-            Write-Error "Failed to run AccUnit tests"
-            exit 1
-        }
-        Write-Host "-----"
-    }
-    else {
-        Write-Error "AccUnit add-in not installed, cannot run tests"
+    if (-not (Test-Path $accdbPath)) {
+        Write-Error "Accdb file not found: $accdbPath"
         exit 1
     }
+    $testAccdbPath = [System.IO.Path]::GetFileName($accdbPath)
+    $testAccdbPath = Join-Path -Path (Get-Location) -ChildPath $testAccdbPath
+    if (-not (Test-Path $testAccdbPath)) {
+        Copy-Item -Path $accdbPath -Destination $testAccdbPath -Force
+    }
+
+    $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath"
+    if (-not $testResult.Success) {
+        Write-Error "Failed to run AccUnit tests"
+        exit 1
+    }
+    Write-Host "-----"
 }
 
-
+# clean up
 if ($SetTrustedLocationBool)
 {
     Write-Host "Remove trusted location: $curDir"
