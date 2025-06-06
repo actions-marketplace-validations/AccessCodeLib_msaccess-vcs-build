@@ -44,7 +44,7 @@ $addInFolder = Join-Path -Path $TargetRootDir -ChildPath "AccUnit"
 Expand-Archive -Path $zipFile -DestinationPath $addInFolder -Force
 
 $addInFileName = "AccUnitLoader.accda"
-$addInPath = Join-Path $addInFolder $addInFileName
+[string]$addInPath = Join-Path $addInFolder $addInFileName
 
 # check if add-in file exists
 if (-not (Test-Path $addInPath)) {
@@ -53,7 +53,7 @@ if (-not (Test-Path $addInPath)) {
 }
 
 #rename file to accdb (compile it to accda later)
-$accdbPath = [System.IO.Path]::ChangeExtension($addInPath, "accdb")
+[string]$accdbPath = [System.IO.Path]::ChangeExtension($addInPath, "accdb")
 
 if (Test-Path $accdbPath) {
     Remove-Item -Path $accdbPath -Force
