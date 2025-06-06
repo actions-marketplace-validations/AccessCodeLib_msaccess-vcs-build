@@ -66,6 +66,7 @@ $access.Visible = $true
 $access.OpenCurrentDatabase($accdbPath)
 $access.Visible = $true
 $access.Run("CheckAccUnitTypeLibFile")
+$access.Run("ExportAccUnitFiles")
 $access.CloseCurrentDatabase()
 
 $accessType = $access.GetType()
@@ -76,6 +77,9 @@ $result = $accessType.InvokeMember(
     $access,
     @(603, $accdbPath, $addInPath)
 )
+
+
+
 
 $access.Quit(2)
 [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
