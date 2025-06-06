@@ -20,14 +20,19 @@ if (-not ([System.IO.Path]::IsPathRooted($AccdbPath)) ) {
     }
 }
 
-if (($AccUnitAddInPath -gt "") -and -not ([System.IO.Path]::IsPathRooted($AccUnitAddInPath)) ) {
+if ([string]::IsNullOrEmpty($AccUnitAddInPath)) {
+    # Default path for the AccUnit add-in
+    $appdata = $env:APPDATA
+    $addInFolder = Join-Path $appdata "Microsoft\AddIns"
+    $AccUnitAddInPath = Join-Path $addInFolder "AccUnitLoader.accda"
+}
+elseif (($AccUnitAddInPath -gt "") -and -not ([System.IO.Path]::IsPathRooted($AccUnitAddInPath)) ) {
     $AccUnitAddInPath = Join-Path -Path (Get-Location) -ChildPath $AccUnitAddInPath
     if ($AccUnitAddInPath -match '[\\/][.][\\/]')
     {
         $AccUnitAddInPath = $AccUnitAddInPath -replace '[\\/][.][\\/]', '\'
     }
 }
-
 
 [string]$addInProcedurePath = ""
 if ($AccUnitAddInPath -gt "") {
@@ -40,7 +45,7 @@ else {
     $AccUnitAddInPath = "$addInProcedureCallRoot.accda"
 }
 if (-not (Test-Path $AccUnitAddInPath)) {
-    Write-Host "msaccess-vcs add-in not found: $AccUnitAddInPath"
+    Write-Host "AccUnit add-in not found: $AccUnitAddInPath"
     Write-Host "Please install AccUnitLoader add-in first."
     exit 1
 }
