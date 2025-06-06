@@ -144,7 +144,18 @@ if ($AppConfigFile -gt "") {
 if ($RunAccUnitTestBool) {
     if (-not ([string]::IsNullOrEmpty($accUnitAddInPath))) {
         Write-Host "Run AccUnit tests"
-        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$accdbPath" -AccUnitAddInPath "$accUnitAddInPath"
+
+        if (-not (Test-Path $accdbPath)) {
+            Write-Error "Accdb file not found: $accdbPath"
+            exit 1
+        }
+        $testAccdbPath = [System.IO.Path]::GetFileName($accdbPath)
+        $testAccdbPath = Join-Path -Path (Get-Location) -ChildPath $testAccdbPath
+        if (-not (Test-Path $testAccdbPath)) {
+            Copy-Item -Path $accdbPath -Destination $testAccdbPath -Force
+        }
+
+        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath" -AccUnitAddInPath "$accUnitAddInPath"
         if (-not $testResult.Success) {
             Write-Error "Failed to run AccUnit tests"
             exit 1
