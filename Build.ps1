@@ -144,7 +144,7 @@ if ($AppConfigFile -gt "") {
 if ($RunAccUnitTestBool) {
     if (-not ([string]::IsNullOrEmpty($accUnitAddInPath))) {
         Write-Host "Run AccUnit tests"
-        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccessFile "$accFilePath" -AccUnitAddInPath "$accUnitAddInPath"
+        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$accdbPath" -AccUnitAddInPath "$accUnitAddInPath"
         if (-not $testResult.Success) {
             Write-Error "Failed to run AccUnit tests"
             exit 1

@@ -7,6 +7,12 @@ param(
    
 )
 
+if ([string]::IsNullOrEmpty($AccdbPath) ) {
+    Write-Host "No Access database file specified."
+    Write-Host "Please specify the path to the Access database file."
+    exit 1
+}
+
 if (-not ([System.IO.Path]::IsPathRooted($AccdbPath)) ) {
     $AccdbPath = Join-Path -Path (Get-Location) -ChildPath $AccdbPath
     if ($AccdbPath -match '[\\/][.][\\/]')
