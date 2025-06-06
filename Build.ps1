@@ -1,12 +1,22 @@
 param(
-    [string]$SourceDir = "", # empty use parameter SourceFile, don't use msaccess-vcs
-    [string]$SourceFile = "", # empty = name from vcs options
-    [string]$TargetDir = "", # Folder for output file, default (empty): current folder 
+    [string]$SourceDir = '', # empty use parameter SourceFile, don't use msaccess-vcs
+    [string]$SourceFile = '', # empty = name from vcs options
+    [string]$TargetDir = '', # Folder for output file, default (empty): current folder 
     [string]$Compile = 'false', # Default to "false" if not specified
-    [string]$AppConfigFile = "", # Default "" => don't change database properties etc.
-    [string]$vcsUrl = "https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest", # empty = don't install msacess-vcs
+    [string]$AppConfigFile = '', # Default "" => don't change database properties etc.
+    [string]$RunAccUnitTests = 'false', # path to msaccess-vcs add-in, empty = don't use msaccess-vcs
+    [string]$InstallAccUnit = 'true', # false = use installed AccUnitLoader.accda, true = install AccUnitLoader.accda (latest version)
+    [string]$vcsUrl = 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest', # empty = don't install msacess-vcs
     [string]$SetTrustedLocation = 'true' # set trusted location for current folder
 )
+
+
+# Prepare parameters
+
+if ([string]::IsNullOrEmpty($SourceDir) -and [string]::IsNullOrEmpty($SourceFile)) {
+    Write-Error "SourceDir or SourceFile must be specified"
+    exit 1  
+}
 
 [bool]$CompileBool = $false
 if ($Compile -and $Compile.ToLower() -eq "true") {
@@ -18,17 +28,19 @@ if ($SetTrustedLocation -and $SetTrustedLocation.ToLower() -eq "true") {
     $SetTrustedLocationBool = $true
 }
 
-if ([string]::IsNullOrEmpty($SourceDir) -and [string]::IsNullOrEmpty($SourceFile)) {
-    Write-Error "SourceDir or SourceFile must be specified"
-    exit 1  
+[bool]$RunAccUnitTestBool = $false
+if ($RunAccUnitTests -and $RunAccUnitTests.ToLower() -eq "true") {
+    $RunAccUnitTestBool = $true
+}
+
+[bool]$InstallAccUnitBool = $false
+if ($RunAccUnitTestBool -and $InstallAccUnit -and $InstallAccUnit.ToLower() -eq "true") {
+    $InstallAccUnitBool = $true
 }
 
 if ([string]::IsNullOrEmpty($SourceDir) ) {
     $vcsUrl = "" # don't install msaccess-vcs if SourceDir is not specified
-
-
 }
-
 
 if (-not [string]::IsNullOrEmpty($TargetDir)) {
     if (-not ([System.IO.Path]::IsPathRooted($TargetDir))) {
@@ -38,6 +50,9 @@ if (-not [string]::IsNullOrEmpty($TargetDir)) {
 else {
     $TargetDir = (Get-Location)
 }
+
+
+# Prepare environment
 
 $curDir = $(Get-Location)
 $tempTrustedLocationName = "VCS-build-folder_"  + (Get-Date -Format "yyyyMMddHHmmss")
@@ -63,6 +78,22 @@ if ($vcsUrl -gt "") {
 	Write-Host "-----"
 }
 
+[string]$accUnitAddInPath = ""
+if ($InstallAccUnitBool) {
+	Write-Host "Install AccUnit"
+    $AccUnitRootDir = $curDir.Path
+	$accUnitInstallData = & "$PSScriptRoot/scripts/Install-AccUnit.ps1" -TargetRootDir "$AccUnitRootDir" -SetTrustedLocation $false
+    
+    if (-not $accUnitInstallData.Success) {
+        Write-Error "Failed to install AccUnit add-in"
+        exit 1
+    }
+    
+    $accUnitAddInPath = $accUnitInstallData.AddInPath
+	Write-Host "-----"
+}
+
+# Build accdb file
 if (-not ([string]::IsNullOrEmpty($SourceDir))) {
     Write-Host "Build accdb - TargetDir: $TargetDir"
     $accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
@@ -108,6 +139,23 @@ if ($AppConfigFile -gt "") {
     & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accFilePath" -ConfigFile "$AppConfigFile"
     Write-Host "-----"
 }   
+
+# Run AccUnit tests
+if ($RunAccUnitTestBool) {
+    if (-not ([string]::IsNullOrEmpty($accUnitAddInPath))) {
+        Write-Host "Run AccUnit tests"
+        $testResult = & "$PSScriptRoot/scripts/Run-AccUnitTests.ps1" -AccessFile "$accFilePath" -AccUnitAddInPath "$accUnitAddInPath"
+        if (-not $testResult.Success) {
+            Write-Error "Failed to run AccUnit tests"
+            exit 1
+        }
+        Write-Host "-----"
+    }
+    else {
+        Write-Error "AccUnit add-in not installed, cannot run tests"
+        exit 1
+    }
+}
 
 
 if ($SetTrustedLocationBool)
