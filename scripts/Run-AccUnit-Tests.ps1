@@ -30,15 +30,15 @@ if (($AccUnitAddInPath -gt "") -and -not ([System.IO.Path]::IsPathRooted($AccUni
 }
 
 
-[string]$addInProcessPath = ""
+[string]$addInProcedurePath = ""
 if ($AccUnitAddInPath -gt "") {
-    $addInProcessPath = [System.IO.Path]::ChangeExtension($AccUnitAddInPath, "").TrimEnd('.')   
+    $addInProcedurePath = [System.IO.Path]::ChangeExtension($AccUnitAddInPath, "").TrimEnd('.')   
 }
 else {
     $appdata = $env:APPDATA
     $addInFolder = Join-Path $appdata "Microsoft\AddIns"
-    $addInProcessPath = Join-Path $addInFolder "AccUnitLoader"
-    $AccUnitAddInPath = "$addInProcessPath.accda"
+    $addInProcedurePath = Join-Path $addInFolder "AccUnitLoader"
+    $AccUnitAddInPath = "$addInProcedurePath.accda"
 }
 if (-not (Test-Path $AccUnitAddInPath)) {
     Write-Host "msaccess-vcs add-in not found: $AccUnitAddInPath"
@@ -48,6 +48,7 @@ if (-not (Test-Path $AccUnitAddInPath)) {
 
 Write-Host "Add-in path: $AccUnitAddInPath"
 Write-Host "File to test: $AccdbPath"
+Write-Host "Add-in procedure: $addInProcedurePath"
 Write-Host ""
 
 $access = New-Object -ComObject Access.Application
@@ -55,7 +56,7 @@ $access.Visible = $true
 $access.OpenCurrentDatabase($AccdbPath)
 
 Write-Host "Run Tests ..." -NoNewline
-$result = $access.Run("$addInProcessPath.AutomatedTestRun")
+$result = $access.Run("$addInProcedurePath.AutomatedTestRun")
 Write-Host " completed"
 Write-Host "Tests success: $result"
 Write-Host "Test result:"
