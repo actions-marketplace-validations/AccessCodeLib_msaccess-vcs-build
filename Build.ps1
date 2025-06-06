@@ -135,7 +135,7 @@ if ($RunAccUnitTestBool) {
             Copy-Item -Path $accdbPath -Destination $testAccdbPath -Force
         }
 
-        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath" -AccUnitAddInPath "$accUnitAddInPath"
+        $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath"
         if (-not $testResult.Success) {
             Write-Error "Failed to run AccUnit tests"
             exit 1
