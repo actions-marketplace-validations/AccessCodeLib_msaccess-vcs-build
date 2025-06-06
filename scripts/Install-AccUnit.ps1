@@ -10,7 +10,6 @@ param(
 Write-Host "Download url: $AccUnitUrl"
 
 $TargetOfficeApp = "Access"
-
 $headers = @{
     "User-Agent" = "PowerShell"
 }
@@ -46,6 +45,43 @@ Expand-Archive -Path $zipFile -DestinationPath $addInFolder -Force
 
 $addInFileName = "AccUnitLoader.accda"
 $addInPath = Join-Path $addInFolder $addInFileName
+
+# check if add-in file exists
+if (-not (Test-Path $addInPath)) {
+    Write-Error "Add-in file not found: $addInPath"
+    exit 1
+}
+
+#rename file to accdb (compile it to accda later)
+$accdbPath = [System.IO.Path]::ChangeExtension($addInPath, "accdb")
+
+if (Test-Path $accdbPath) {
+    Remove-Item -Path $accdbPath -Force
+}
+Rename-Item -Path $addInPath -NewName $accdbPath
+
+$access = New-Object -ComObject Access.Application
+$access.Visible = $true
+
+$access.OpenCurrentDatabase($accdbPath)
+$access.Visible = $true
+$access.Run("CheckAccUnitTypeLibFile")
+$access.CloseCurrentDatabase()
+
+$accessType = $access.GetType()
+$result = $accessType.InvokeMember(
+    "SysCmd",
+    "InvokeMethod",
+    $null,
+    $access,
+    @(603, $accdbPath, $addInPath)
+)
+
+$access.Quit(2)
+[void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($access)
+Remove-Variable access
+[GC]::Collect()
+[GC]::WaitForPendingFinalizers()
 
 Write-Host "AccUnitLoader installed: $addInPath"
 
