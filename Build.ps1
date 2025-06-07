@@ -136,8 +136,19 @@ if ($RunAccUnitTestBool) {
     }
 
     $testResult = & "$PSScriptRoot/scripts/Run-AccUnit-Tests.ps1" -AccdbPath "$testAccdbPath"
+#copy test log to TargetDir
+    $testLogFile = $testResult.LogFile
+    if ($TargetDir -ne (Get-Location) -and (Test-Path $testLogFile)) {
+        $targetTestLogFile = Join-Path -Path $TargetDir -ChildPath ([System.IO.Path]::GetFileName($testLogFile))
+        Copy-Item -Path $testLogFile -Destination $targetTestLogFile -Force
+        Write-Host "Test log file copied to: $targetTestLogFile"
+    }
+
     if (-not $testResult.Success) {
-        Write-Error "Failed to run AccUnit tests"
+        Write-Host "Tests failed" -ForegroundColor Red
+        if (Test-Path $testLogFile) {
+            Get-Content $testLogFile | Where-Object { $_ -match "(Failed|Error)$" } | ForEach-Object { Write-Host $_ }
+        }
         exit 1
     }
     Write-Host "-----"
