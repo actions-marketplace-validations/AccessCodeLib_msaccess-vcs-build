@@ -147,7 +147,7 @@ if ($RunAccUnitTestBool) {
     if (-not $testResult.Success) {
         Write-Host "Tests failed" -ForegroundColor Red
         if (Test-Path $testLogFile) {
-            Get-Content $testLogFile | Where-Object { $_ -match "(Failed|Error)$" } | ForEach-Object { Write-Host $_ }
+            Get-Content $testLogFile | Where-Object { $_ -match "\t(Failed|Error)\t" } | ForEach-Object { Write-Host $_ }
         }
         exit 1
     }
