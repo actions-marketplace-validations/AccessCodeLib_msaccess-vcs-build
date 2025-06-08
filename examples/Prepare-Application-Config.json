@@ -5,7 +5,7 @@
         },
         {
             "Name": "TestProcedure2",
-            "Parameters": ["text", 123]
+            "Parameters": ["Test", 123]
         }
     ],
     "DatabaseProperties": [

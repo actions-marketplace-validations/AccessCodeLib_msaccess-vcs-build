@@ -1,4 +1,4 @@
-name: build-from-source
+name: Build-self-hosted
 on:
   - workflow_dispatch
 
@@ -8,17 +8,17 @@ permissions:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: [self-hosted, Windows, Office]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.ACCESS_TOKEN }} 
       - name: "Build Access file (accdb/accde)"
         id: build_access_file
         uses: AccessCodeLib/msaccess-vcs-build@main
         with:
           source-dir: "./source"
+          target-dir: "bin"
+          compile: "true"
         timeout-minutes: 10
       - name: "Upload Build Artifact"
         uses: actions/upload-artifact@v4
