@@ -30,7 +30,10 @@ inputs:
     description: 'msaccess-vcs release url'
     required: false
     default: 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest'
-    
+  file-name:
+    description: 'build this filename, empty = use filename from vcs options'
+    required: false
+    default: ''
 runs:
   using: "composite"
   steps:
@@ -43,7 +46,8 @@ runs:
           -Compile "${{ inputs.compile }}" `
           -AppConfigFile "${{ inputs.app-config }}" `
           -vcsUrl "${{ inputs.vcs-url }}" `
-          -RunAccUnitTests "${{ inputs.run-accunit-tests }}"
+          -RunAccUnitTests "${{ inputs.run-accunit-tests }}" `
+          -FileName "${{ inputs.file-name }}"
 
 outputs:
   result:
