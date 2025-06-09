@@ -55,6 +55,18 @@ jobs:
 #### Azure DevOps
 * [AccessCodeLib/BuildAccdeExample: Build-self-hosted-MultiBit](https://github.com/AccessCodeLib/BuildAccdeExample/blob/main/.azure-devops/azure-pipelines.yml)
 
+### Self-hosted runner
+
+#### Requirements
+Install Office with the appropriate bit version and license
+
+#### Tips
+* Pre-install msaccess-vcs and set the vcs-url parameter to “”.
+* Set the required Trusted Locations
+
+##### Note
+You can also run the Runner on your own developer PC for testing purposes.
+
 ## PowerShell only - Build.ps1
 It is also possible to use only the PowerShell scripts to execute the build process locally.
 
