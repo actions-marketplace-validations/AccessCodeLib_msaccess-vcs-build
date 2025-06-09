@@ -6,7 +6,8 @@ param(
     [string]$AppConfigFile = '', # Default "" => don't change database properties etc.
     [string]$RunAccUnitTests = 'false', # path to msaccess-vcs add-in, empty = don't use msaccess-vcs
     [string]$vcsUrl = 'https://api.github.com/repos/josef-poetzl/msaccess-vcs-addin/releases/latest', # empty = don't install msacess-vcs
-    [string]$SetTrustedLocation = 'true' # set trusted location for current folder
+    [string]$SetTrustedLocation = 'true', # set trusted location for current folder
+    [string]$FileName = '' # empty .. use file name from vcs options
 )
 
 
@@ -76,7 +77,7 @@ if ($vcsUrl -gt "") {
 # Build accdb file
 if (-not ([string]::IsNullOrEmpty($SourceDir))) {
     Write-Host "Build accdb - TargetDir: $TargetDir"
-    $accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath
+    $accdbPath = & "$PSScriptRoot/scripts/Build-Accdb.ps1" -SourceDir $SourceDir -TargetDir "${TargetDir}" -VcsAddInPath $vcsAddInPath -FileName "${FileName}"
     $accdbPath = "$accdbPath" # simple join if array
     $accdbPath = $accdbPath.Trim()
     if (([string]::IsNullOrEmpty($accdbPath)) -or -not (Test-Path $accdbPath)) {
