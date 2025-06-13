@@ -1,4 +1,4 @@
-name: "msaccess-vcs Build"
+name: "msaccess-vcs-Build"
 description: "Build accdb/accde file from source (msaccess-vcs exports)."
 
 branding:
