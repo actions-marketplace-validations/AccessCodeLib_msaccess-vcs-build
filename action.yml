@@ -2,7 +2,7 @@ name: "MSAccess-VCS-Build"
 description: "Build accdb/accde file from source (msaccess-vcs exports)."
 
 branding:
-  icon: 'filecode'
+  icon: 'database'
   color: 'blue' 
 
 inputs:
