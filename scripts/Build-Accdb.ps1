@@ -28,6 +28,13 @@ else {
 	$access.OpenCurrentDatabase($accdbPath)
 }
 
+# Check UserControl
+[bool]$accessUserControl = $access.UserControl
+Write-Host "Access User Control Mode: $accessUserControl"
+if ($accessUserControl -ne $true) {
+    Write-Host "Access is not in user control mode => maybe msaccess-vcs does not work completely."
+}
+
 [string]$addInProcessPath = ""
 if ($VcsAddInPath -gt "") {
     $addInProcessPath = [System.IO.Path]::ChangeExtension($VcsAddInPath, "").TrimEnd('.')   
@@ -98,7 +105,6 @@ Write-Host ""
 if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 	Write-Host "Built: $builtFileName ($builtFilePath)"
 } else {
-	
 	Write-Host "Build failed"
     if ([string]::IsNullOrEmpty($builtFileName)) {
         Write-Host "   (builtFileName is empty)"
