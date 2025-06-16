@@ -40,7 +40,7 @@ runs:
     - name: "Build accdb/accde from msaccess-vcs export"
       shell: pwsh
       run: |
-        ${{ github.action_path }}/Build.ps1 `
+        ${{ github.action_path }}\Build.ps1 `
           -SourceDir "${{ inputs.source-dir }}" `
           -TargetDir "${{ inputs.target-dir }}" `
           -Compile "${{ inputs.compile }}" `
