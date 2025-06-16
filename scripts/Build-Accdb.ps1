@@ -15,6 +15,9 @@ $currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 if ($serviceAccounts | Where-Object { $currentUser -match $_ }) {
     Write-Warning "Warning: This script is running under a Windows service account ($currentUser). Microsoft Access should not be executed as a service!"
 }
+else {
+    Write-Host "Running script as user: $currentUser"
+}
 
 [string]$tempFileName = "VcsBuildTempApp"
 [string]$accdbFileName = $tempFileName
