@@ -84,7 +84,7 @@ if (-not ([string]::IsNullOrEmpty($SourceDir))) {
         Write-Error "Failed to create accdb file"
         exit 1
     }
-    Write-Host "Build file: $accdbPath"
+    Write-Host "Built file: $accdbPath"
 } 
 else { # use SourceFile
     if (-not ([System.IO.Path]::IsPathRooted($SourceFile))) {
