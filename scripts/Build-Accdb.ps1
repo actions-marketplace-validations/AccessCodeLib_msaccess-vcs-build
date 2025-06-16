@@ -98,7 +98,20 @@ Write-Host ""
 if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 	Write-Host "Built: $builtFileName ($builtFilePath)"
 } else {
+	
 	Write-Host "Build failed"
+    if ([string]::IsNullOrEmpty($builtFileName)) {
+        Write-Host "   (builtFileName is empty)"
+    }
+    else {
+        Write-Host "   $builtFileName"
+    }
+    if ([string]::IsNullOrEmpty($builtFilePath)) {
+        Write-Host "   (builtFilePath is empty)"
+    } 
+    else {
+	    Write-Host "  $builtFilePath"
+    }
 	exit 1
 }
 
@@ -125,8 +138,4 @@ if (Test-Path $tempFilePath) {
     Remove-Item -Path $tempFilePath -Force  
 }
 
-#Write-Host "::notice::Build accdb completed: $FileName"
-#Write-Host "|$targetFilePath|"
-#Write-Host ""
-#
 return "$targetFilePath"
