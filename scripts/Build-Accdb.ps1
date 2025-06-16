@@ -9,6 +9,13 @@ param(
    
 )
 
+# Check if the script is running under a Windows service account (SYSTEM, NETWORK SERVICE, LOCAL SERVICE)
+$serviceAccounts = @('SYSTEM', 'NETWORK SERVICE', 'LOCAL SERVICE')
+$currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+if ($serviceAccounts | Where-Object { $currentUser -match $_ }) {
+    Write-Warning "Warning: This script is running under a Windows service account ($currentUser). Microsoft Access should not be executed as a service!"
+}
+
 [string]$tempFileName = "VcsBuildTempApp"
 [string]$accdbFileName = $tempFileName
 if ($FileName -gt "") {
@@ -27,6 +34,9 @@ if (-not (Test-Path $accdbPath)) {
 else {
 	$access.OpenCurrentDatabase($accdbPath)
 }
+
+
+
 
 [string]$addInProcessPath = ""
 if ($VcsAddInPath -gt "") {
@@ -98,7 +108,6 @@ Write-Host ""
 if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 	Write-Host "Built: $builtFileName ($builtFilePath)"
 } else {
-	
 	Write-Host "Build failed"
     if ([string]::IsNullOrEmpty($builtFileName)) {
         Write-Host "   (builtFileName is empty)"
