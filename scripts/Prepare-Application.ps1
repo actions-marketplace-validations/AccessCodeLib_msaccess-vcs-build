@@ -124,11 +124,13 @@ if (-not ([System.IO.Path]::IsPathRooted($fullPath))) {
 Write-Host "Config $fullPath"
 
 try {
+    
+    $access = New-Object -ComObject Access.Application
+    $access.OpenCurrentDatabase($fullPath)
 
 # Run procedures from config
     if ($config.Procedures -and $config.Procedures.Count -gt 0) {
-        $access = New-Object -ComObject Access.Application
-        $access.OpenCurrentDatabase($fullPath)
+        
         foreach ($procedure in $config.Procedures) {
             if (-not $procedure.Name) {
                 Write-Error "Procedure name is missing in the configuration."
@@ -152,13 +154,8 @@ try {
 
 # Set database properties from config
     if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
-        if ($access) {
-            $db = $access.CurrentDb()
-        }
-        else { # use DAO.Database
-            $daoEngine = New-Object -ComObject DAO.DBEngine.120
-            $db = $daoEngine.OpenDatabase($fullPath)
-        }
+        
+        $db = $access.CurrentDb()
 
         foreach ($property in $config.DatabaseProperties) {
             $propertyName = $property.Name
@@ -186,17 +183,9 @@ catch {
 }
 finally {
     if ($db) {
-        if (-not $access) {
-            # If we used DAO, we need to close the database
-            $db.Close()
-        }
         SafeReleaseComObject $db
         Remove-Variable -Name db -ErrorAction SilentlyContinue
         
-    }
-    if ($daoEngine) {
-        SafeReleaseComObject $daoEngine
-        Remove-Variable -Name daoEngine -ErrorAction SilentlyContinue
     }
     if ($access) {
         $access.CloseCurrentDatabase()
