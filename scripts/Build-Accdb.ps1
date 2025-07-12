@@ -49,10 +49,12 @@ else {
     $appdata = $env:APPDATA
     $addInFolder = Join-Path $appdata "MSAccessVCS"
     $addInProcessPath = Join-Path $addInFolder "Version Control"
-    $VcsAddInPath = "$addInProcessPath.accda"
 }
-if (-not (Test-Path $VcsAddInPath)) {
-    Write-Host "msaccess-vcs add-in not found: $VcsAddInPath"
+
+$addInPattern = "$addInProcessPath.accd[ae]"
+
+if (-not (Test-Path $addInPattern)) {
+    Write-Host "msaccess-vcs add-in not found: $addInPattern"
     Write-Host "Please install msaccess-vcs add-in first."
     exit 1
 }
