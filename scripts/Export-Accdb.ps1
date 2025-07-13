@@ -2,8 +2,8 @@
 # export from accdb
 #
 param(
-	[string]$FileName, 
-    [bool]$ForceExportAll = $true,
+    [string]$FileName, 
+    [bool]$ForceExportAll = $false,
     [string]$VcsAddInPath = "" # empty = use default path (installed version)
    
 )
@@ -22,14 +22,10 @@ else {
 # Check/build full file path
 $curDir = $(Get-Location)
 $accdbPath = $FileName
-if (
-    -not ([System.IO.Path]::IsPathRooted($accdbPath))
-) {
+if (-not ([System.IO.Path]::IsPathRooted($accdbPath))) {
     $accdbPath = Join-Path -Path $curDir -ChildPath $FileName
+    $accdbPath = [System.IO.Path]::GetFullPath($accdbPath)
 }
-# Normalize the path to remove .\ or ./ elements
-$accdbPath = [System.IO.Path]::GetFullPath($accdbPath)
-
 
 if (-not (Test-Path $accdbPath)) {    
     Write-Error "Error: The specified Access database file does not exist: $accdbPath"
@@ -49,27 +45,14 @@ else {
 }
 
 $addInPattern = "$addInProcessPath.accd[ae]"
-
 if (-not (Test-Path $addInPattern)) {
     Write-Host "msaccess-vcs add-in not found: $addInPattern"
     Write-Host "Please install msaccess-vcs add-in first."
     exit 1
 }
 
-Write-Host "Add-in path: $addInProcessPath"
-Write-Host "file path: $accdbPath"
-Write-Host "Export folder: " -NoNewline
-if ($SourceDir -gt "") {
-    Write-Host "$SourceDir"
-} else {
-    Write-Host "(default)"
-}
-Write-Host "Force export all: " -NoNewline
-if ($ForceExportAll) {
-    Write-Host "True"
-} else {
-    Write-Host "False"
-}
+Write-Host "Add-in: $addInProcessPath"
+Write-Host "file: $accdbPath"
 
 
 ## open access file
