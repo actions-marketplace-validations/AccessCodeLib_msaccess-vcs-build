@@ -1,6 +1,6 @@
 param(
-    [string]$SourceDir = '', # empty use parameter SourceFile, don't use msaccess-vcs
-    [string]$SourceFile = '', # empty = name from vcs options
+    [string]$SourceDir = '', # empty => use parameter SourceFile, don't use msaccess-vcs
+    [string]$SourceFile = '', # empty => use msaccess-vcs with SourceDir else: only compile file $SourceFile
     [string]$TargetDir = '', # Folder for output file, default (empty): current folder 
     [string]$Compile = 'false', # Default to "false" if not specified
     [string]$AppConfigFile = '', # Default "" => don't change database properties etc.
@@ -84,7 +84,7 @@ if (-not ([string]::IsNullOrEmpty($SourceDir))) {
         Write-Error "Failed to create accdb file"
         exit 1
     }
-    Write-Host "Build file: $accdbPath"
+    Write-Host "Built file: $accdbPath"
 } 
 else { # use SourceFile
     if (-not ([System.IO.Path]::IsPathRooted($SourceFile))) {

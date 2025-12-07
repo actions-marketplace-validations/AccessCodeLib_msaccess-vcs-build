@@ -9,6 +9,16 @@ param(
    
 )
 
+# Check if the script is running under a Windows service account (SYSTEM, NETWORK SERVICE, LOCAL SERVICE)
+$serviceAccounts = @('SYSTEM', 'NETWORK SERVICE', 'LOCAL SERVICE')
+$currentUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+if ($serviceAccounts | Where-Object { $currentUser -match $_ }) {
+    Write-Warning "Warning: This script is running under a Windows service account ($currentUser). Microsoft Access should not be executed as a service!"
+}
+else {
+    Write-Host "Running script as user: $currentUser"
+}
+
 [string]$tempFileName = "VcsBuildTempApp"
 [string]$accdbFileName = $tempFileName
 if ($FileName -gt "") {
@@ -28,6 +38,9 @@ else {
 	$access.OpenCurrentDatabase($accdbPath)
 }
 
+
+
+
 [string]$addInProcessPath = ""
 if ($VcsAddInPath -gt "") {
     $addInProcessPath = [System.IO.Path]::ChangeExtension($VcsAddInPath, "").TrimEnd('.')   
@@ -36,10 +49,12 @@ else {
     $appdata = $env:APPDATA
     $addInFolder = Join-Path $appdata "MSAccessVCS"
     $addInProcessPath = Join-Path $addInFolder "Version Control"
-    $VcsAddInPath = "$addInProcessPath.accda"
 }
-if (-not (Test-Path $VcsAddInPath)) {
-    Write-Host "msaccess-vcs add-in not found: $VcsAddInPath"
+
+$addInPattern = "$addInProcessPath.accd[ae]"
+
+if (-not (Test-Path $addInPattern)) {
+    Write-Host "msaccess-vcs add-in not found: $addInPattern"
     Write-Host "Please install msaccess-vcs add-in first."
     exit 1
 }
@@ -99,6 +114,18 @@ if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 	Write-Host "Built: $builtFileName ($builtFilePath)"
 } else {
 	Write-Host "Build failed"
+    if ([string]::IsNullOrEmpty($builtFileName)) {
+        Write-Host "   (builtFileName is empty)"
+    }
+    else {
+        Write-Host "   $builtFileName"
+    }
+    if ([string]::IsNullOrEmpty($builtFilePath)) {
+        Write-Host "   (builtFilePath is empty)"
+    } 
+    else {
+	    Write-Host "  $builtFilePath"
+    }
 	exit 1
 }
 
@@ -125,8 +152,4 @@ if (Test-Path $tempFilePath) {
     Remove-Item -Path $tempFilePath -Force  
 }
 
-#Write-Host "::notice::Build accdb completed: $FileName"
-#Write-Host "|$targetFilePath|"
-#Write-Host ""
-#
 return "$targetFilePath"
