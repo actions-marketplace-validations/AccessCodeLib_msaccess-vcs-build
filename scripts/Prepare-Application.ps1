@@ -88,6 +88,74 @@ function Invoke-Procedure {
 
 }
 
+function Remove-VbaModules {
+    param (
+        [System.Object]$vbProject,
+        [string[]]$Patterns
+    )
+
+    if (-not $Patterns -or $Patterns.Count -eq 0) {
+        return
+    }
+
+    # Collect matching names first to avoid modifying the collection while iterating
+    $componentsToRemove = @()
+    foreach ($component in $vbProject.VBComponents) {
+        foreach ($pattern in $Patterns) {
+            if ($component.Name -like $pattern) {
+                $componentsToRemove += $component.Name
+                break
+            }
+        }
+    }
+
+    foreach ($name in $componentsToRemove) {
+        try {
+            $component = $vbProject.VBComponents.Item($name)
+            $vbProject.VBComponents.Remove($component)
+            Write-Host "Removed module '$name'"
+        }
+        catch {
+            Write-Host "Warning: Could not remove module '$name': $($_.Exception.Message)"
+        }
+    }
+
+    if ($componentsToRemove.Count -eq 0) {
+        Write-Host "No modules matched the removal patterns."
+    }
+}
+
+function Remove-VbaReferences {
+    param (
+        [System.Object]$vbProject,
+        [string[]]$ReferenceNames
+    )
+
+    if (-not $ReferenceNames -or $ReferenceNames.Count -eq 0) {
+        return
+    }
+
+    foreach ($refName in $ReferenceNames) {
+        $found = $false
+        foreach ($ref in $vbProject.References) {
+            if ($ref.Name -eq $refName) {
+                try {
+                    $vbProject.References.Remove($ref)
+                    Write-Host "Removed reference '$refName'"
+                    $found = $true
+                }
+                catch {
+                    Write-Host "Warning: Could not remove reference '$refName': $($_.Exception.Message)"
+                }
+                break
+            }
+        }
+        if (-not $found) {
+            Write-Host "Reference '$refName' not found (may already be absent)."
+        }
+    }
+}
+
 function SafeReleaseComObject($comObject) {
     if ($null -ne $comObject -and $comObject -is [System.__ComObject]) {
         [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($comObject)
@@ -127,6 +195,26 @@ try {
     
     $access = New-Object -ComObject Access.Application
     $access.OpenCurrentDatabase($fullPath)
+
+# Remove VBA modules matching name patterns (e.g. test modules) before running procedures
+    if ($config.RemoveModules -and $config.RemoveModules.Count -gt 0) {
+        Write-Host "Removing VBA modules matching patterns: $($config.RemoveModules -join ', ')"
+        $vbProject = $access.VBE.ActiveVBProject
+        Remove-VbaModules -vbProject $vbProject -Patterns $config.RemoveModules
+    }
+    else {
+        Write-Host "No modules to remove."
+    }
+
+# Remove VBA references by name (e.g. Rubberduck) before running procedures
+    if ($config.RemoveReferences -and $config.RemoveReferences.Count -gt 0) {
+        Write-Host "Removing VBA references: $($config.RemoveReferences -join ', ')"
+        $vbProject = $access.VBE.ActiveVBProject
+        Remove-VbaReferences -vbProject $vbProject -ReferenceNames $config.RemoveReferences
+    }
+    else {
+        Write-Host "No references to remove."
+    }
 
 # Run procedures from config
     if ($config.Procedures -and $config.Procedures.Count -gt 0) {
