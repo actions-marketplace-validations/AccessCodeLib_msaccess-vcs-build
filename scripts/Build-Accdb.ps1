@@ -107,6 +107,11 @@ Remove-Variable access
 [GC]::Collect()
 Write-Host "." -NoNewline
 [GC]::WaitForPendingFinalizers()
+
+# Kill any lingering Access processes - see issue #1 (support for msaccess-vcs-addin v5), thanks DecimalTurn
+Get-Process -Name "MSACCESS" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+Start-Sleep -Seconds 3
+
 Write-Host " completed"
 Write-Host ""
 
