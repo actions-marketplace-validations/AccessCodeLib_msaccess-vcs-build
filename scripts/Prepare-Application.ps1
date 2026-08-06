@@ -98,12 +98,23 @@ function Remove-VbaModules {
         return
     }
 
+    # VBComponent types safe to remove: 1 = standard module, 2 = class module,
+    # 3 = MSForm. Type 100 is a document module (a form or report code-behind)
+    # and must never be removed this way, so a pattern that matches a
+    # form/report name is skipped rather than deleted.
+    $removableTypes = @(1, 2, 3)
+
     # Collect matching names first to avoid modifying the collection while iterating
     $componentsToRemove = @()
     foreach ($component in $vbProject.VBComponents) {
         foreach ($pattern in $Patterns) {
             if ($component.Name -like $pattern) {
-                $componentsToRemove += $component.Name
+                if ($removableTypes -contains $component.Type) {
+                    $componentsToRemove += $component.Name
+                }
+                else {
+                    Write-Host "Skipping '$($component.Name)' (matched '$pattern' but is a document module, type $($component.Type) - a form/report code-behind)"
+                }
                 break
             }
         }
