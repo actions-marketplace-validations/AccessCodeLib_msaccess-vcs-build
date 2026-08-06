@@ -135,6 +135,30 @@ if ( ($builtFileName -gt "") -and ($builtFileName -ne "$tempFileName.accdb") ) {
 }
 
 
+# Wait for a file to become openable with an exclusive lock, or time out.
+# $access.Quit() can return before the MSACCESS process has fully exited and
+# released its lock on the built database, which makes Copy-Item fail
+# intermittently with "being used by another process".
+function Wait-FileUnlocked {
+    param(
+        [string]$Path,
+        [int]$TimeoutSeconds = 60
+    )
+    $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    while ($sw.Elapsed.TotalSeconds -lt $TimeoutSeconds) {
+        try {
+            $stream = [System.IO.File]::Open($Path, [System.IO.FileMode]::Open, [System.IO.FileAccess]::ReadWrite, [System.IO.FileShare]::None)
+            $stream.Close()
+            $stream.Dispose()
+            return $true
+        }
+        catch {
+            Start-Sleep -Milliseconds 500
+        }
+    }
+    return $false
+}
+
 # copy file to TargetDir
 if ([string]::IsNullOrEmpty($FileName)) {
     $FileName = $builtFileName
@@ -145,7 +169,37 @@ $builtFilePathDir = [System.IO.Path]::GetDirectoryName($builtFilePath)
 if (($TargetDir -gt "") -and ($TargetDir -ne  $builtFilePathDir) ) {
 	Write-Host "Copy accdb to $TargetDir"
 	New-Item -Path $TargetDir -ItemType Directory -Force | Out-Null
-    Copy-Item -Path $builtFilePath -Destination "$TargetDir\$FileName"
+
+    # Make sure the built database is no longer locked before copying it. If it is
+    # still locked after the grace window, stop any lingering MSACCESS process as a
+    # last resort (the CI runner should not have unrelated Access instances open).
+    if (-not (Wait-FileUnlocked -Path $builtFilePath -TimeoutSeconds 60)) {
+        Write-Warning "Built file still locked after 60s. Stopping lingering MSACCESS process(es)..."
+        Get-Process -Name MSACCESS -ErrorAction SilentlyContinue | ForEach-Object {
+            try {
+                Stop-Process -Id $_.Id -Force -ErrorAction Stop
+                Write-Host "Stopped MSACCESS pid $($_.Id)"
+            }
+            catch {
+                Write-Warning "Could not stop MSACCESS pid $($_.Id): $($_.Exception.Message)"
+            }
+        }
+        $null = Wait-FileUnlocked -Path $builtFilePath -TimeoutSeconds 10
+    }
+
+    $copyAttempts = 0
+    while ($true) {
+        $copyAttempts++
+        try {
+            Copy-Item -Path $builtFilePath -Destination "$TargetDir\$FileName" -Force -ErrorAction Stop
+            break
+        }
+        catch {
+            if ($copyAttempts -ge 5) { throw }
+            Write-Warning "Copy attempt $copyAttempts failed: $($_.Exception.Message). Retrying..."
+            Start-Sleep -Seconds 2
+        }
+    }
 	Write-Host ""
 	$targetFilePath = "$TargetDir\$FileName"
 } elseif ($FileName -ne $builtFileName) {
