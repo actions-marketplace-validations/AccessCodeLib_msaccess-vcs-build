@@ -1,6 +1,11 @@
 param(
     [string]$AccessFile,
-    [string]$ConfigFile
+    [string]$ConfigFile,
+    # All (default): run every step. PreCompile: module/reference removal and
+    # procedures (require an editable .accdb). PostCompile: database properties
+    # only (set on the compiled .accde so they do not alter the source .accdb).
+    [ValidateSet('All', 'PreCompile', 'PostCompile')]
+    [string]$Stage = 'All'
 )
 
 enum PropertyType {
@@ -207,28 +212,34 @@ try {
     $access = New-Object -ComObject Access.Application
     $access.OpenCurrentDatabase($fullPath)
 
+# Pre-compile steps: module/reference removal and procedures need an editable .accdb.
+    $runPreCompile = ($Stage -eq 'All' -or $Stage -eq 'PreCompile')
+    # Post-compile step: database properties are set on the compiled .accde so they
+    # do not take effect on (or alter) the source .accdb.
+    $runPostCompile = ($Stage -eq 'All' -or $Stage -eq 'PostCompile')
+
 # Remove VBA modules matching name patterns (e.g. test modules) before running procedures
-    if ($config.RemoveModules -and $config.RemoveModules.Count -gt 0) {
+    if ($runPreCompile -and $config.RemoveModules -and $config.RemoveModules.Count -gt 0) {
         Write-Host "Removing VBA modules matching patterns: $($config.RemoveModules -join ', ')"
         $vbProject = $access.VBE.ActiveVBProject
         Remove-VbaModules -vbProject $vbProject -Patterns $config.RemoveModules
     }
-    else {
+    elseif ($runPreCompile) {
         Write-Host "No modules to remove."
     }
 
 # Remove VBA references by name (e.g. Rubberduck) before running procedures
-    if ($config.RemoveReferences -and $config.RemoveReferences.Count -gt 0) {
+    if ($runPreCompile -and $config.RemoveReferences -and $config.RemoveReferences.Count -gt 0) {
         Write-Host "Removing VBA references: $($config.RemoveReferences -join ', ')"
         $vbProject = $access.VBE.ActiveVBProject
         Remove-VbaReferences -vbProject $vbProject -ReferenceNames $config.RemoveReferences
     }
-    else {
+    elseif ($runPreCompile) {
         Write-Host "No references to remove."
     }
 
 # Run procedures from config
-    if ($config.Procedures -and $config.Procedures.Count -gt 0) {
+    if ($runPreCompile -and $config.Procedures -and $config.Procedures.Count -gt 0) {
         
         foreach ($procedure in $config.Procedures) {
             if (-not $procedure.Name) {
@@ -247,12 +258,12 @@ try {
             Invoke-Procedure -access $access -ProcedureName $procedure.Name -Arguments $Parameters    
         }
     }
-    else {
+    elseif ($runPreCompile) {
         Write-Host "No procedures to run."
     }
 
 # Set database properties from config
-    if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
+    if ($runPostCompile -and $config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
         
         $db = $access.CurrentDb()
 
@@ -265,7 +276,7 @@ try {
             Set-DbProperty -db $db -PropertyName $propertyName -PropertyType $propertyType -PropertyValue $propertyValue
         }
     }
-    else {
+    elseif ($runPostCompile) {
         Write-Host "No database properties to set."
     }
 }

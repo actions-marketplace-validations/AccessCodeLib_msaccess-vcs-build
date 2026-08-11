@@ -88,8 +88,9 @@ It is also possible to use only the PowerShell scripts to execute the build proc
 Steps:
 1. download msacesss-vcs
 2. build accdb from source (use file name from msaccess-vcs property file)
-3. config accdb with settings from [Application-Config.json](https://github.com/AccessCodeLib/msaccess-vcs-build/blob/main/examples/Prepare-Application-Config.json)
+3. prepare accdb: remove modules/references and run procedures from [Application-Config.json](https://github.com/AccessCodeLib/msaccess-vcs-build/blob/main/examples/Prepare-Application-Config.json)
 4. compile accdb to accde
+5. apply database properties from Application-Config.json to the accde
 
 #### Compile accdb file
 ```powershell

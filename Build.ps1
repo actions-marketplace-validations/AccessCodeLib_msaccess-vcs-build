@@ -102,12 +102,14 @@ Write-Host "-----"
 
 $accFilePath = $accdbPath
 
-# Prepare the application BEFORE compiling. Property, procedure, module and reference
-# changes require an editable database; VBA components cannot be modified in a compiled
-# .accde. Running prepare on the .accdb also lets the compiled output reflect the changes.
+# Prepare the application. Module/reference removal and procedures require an editable
+# .accdb, so they run before compiling. Database properties are applied after compiling,
+# directly on the .accde, so they do not take effect on (or alter) the source .accdb.
+# When not compiling there is no .accde, so every step runs on the .accdb.
 if ($AppConfigFile -gt "") {
-    Write-Host "Run procedures from config file: $AppConfigFile"
-    & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accdbPath" -ConfigFile "$AppConfigFile"
+    $preStage = if ($CompileBool) { "PreCompile" } else { "All" }
+    Write-Host "Prepare application ($preStage) from config file: $AppConfigFile"
+    & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accdbPath" -ConfigFile "$AppConfigFile" -Stage $preStage
     Write-Host "-----"
 }
 
@@ -122,6 +124,13 @@ if ($CompileBool) {
     }
     $accFilePath = $compileResult.AccdePath
     Write-Host "-----"
+
+    # Apply database properties to the compiled .accde.
+    if ($AppConfigFile -gt "") {
+        Write-Host "Prepare application (PostCompile) from config file: $AppConfigFile"
+        & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accFilePath" -ConfigFile "$AppConfigFile" -Stage PostCompile
+        Write-Host "-----"
+    }
 }
 
 # Run AccUnit tests
