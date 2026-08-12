@@ -1,6 +1,11 @@
 param(
     [string]$AccessFile,
-    [string]$ConfigFile
+    [string]$ConfigFile,
+    # All (default): run every step. PreCompile: module/reference removal and
+    # procedures (require an editable .accdb). PostCompile: database properties
+    # only (set on the compiled .accde so they do not alter the source .accdb).
+    [ValidateSet('All', 'PreCompile', 'PostCompile')]
+    [string]$Stage = 'All'
 )
 
 enum PropertyType {
@@ -88,6 +93,85 @@ function Invoke-Procedure {
 
 }
 
+function Remove-VbaModules {
+    param (
+        [System.Object]$vbProject,
+        [string[]]$Patterns
+    )
+
+    if (-not $Patterns -or $Patterns.Count -eq 0) {
+        return
+    }
+
+    # VBComponent types safe to remove: 1 = standard module, 2 = class module,
+    # 3 = MSForm. Type 100 is a document module (a form or report code-behind)
+    # and must never be removed this way, so a pattern that matches a
+    # form/report name is skipped rather than deleted.
+    $removableTypes = @(1, 2, 3)
+
+    # Collect matching names first to avoid modifying the collection while iterating
+    $componentsToRemove = @()
+    foreach ($component in $vbProject.VBComponents) {
+        foreach ($pattern in $Patterns) {
+            if ($component.Name -like $pattern) {
+                if ($removableTypes -contains $component.Type) {
+                    $componentsToRemove += $component.Name
+                }
+                else {
+                    Write-Host "Skipping '$($component.Name)' (matched '$pattern' but is a document module, type $($component.Type) - a form/report code-behind)"
+                }
+                break
+            }
+        }
+    }
+
+    foreach ($name in $componentsToRemove) {
+        try {
+            $component = $vbProject.VBComponents.Item($name)
+            $vbProject.VBComponents.Remove($component)
+            Write-Host "Removed module '$name'"
+        }
+        catch {
+            Write-Host "Warning: Could not remove module '$name': $($_.Exception.Message)"
+        }
+    }
+
+    if ($componentsToRemove.Count -eq 0) {
+        Write-Host "No modules matched the removal patterns."
+    }
+}
+
+function Remove-VbaReferences {
+    param (
+        [System.Object]$vbProject,
+        [string[]]$ReferenceNames
+    )
+
+    if (-not $ReferenceNames -or $ReferenceNames.Count -eq 0) {
+        return
+    }
+
+    foreach ($refName in $ReferenceNames) {
+        $found = $false
+        foreach ($ref in $vbProject.References) {
+            if ($ref.Name -eq $refName) {
+                try {
+                    $vbProject.References.Remove($ref)
+                    Write-Host "Removed reference '$refName'"
+                    $found = $true
+                }
+                catch {
+                    Write-Host "Warning: Could not remove reference '$refName': $($_.Exception.Message)"
+                }
+                break
+            }
+        }
+        if (-not $found) {
+            Write-Host "Reference '$refName' not found (may already be absent)."
+        }
+    }
+}
+
 function SafeReleaseComObject($comObject) {
     if ($null -ne $comObject -and $comObject -is [System.__ComObject]) {
         [void][System.Runtime.Interopservices.Marshal]::ReleaseComObject($comObject)
@@ -128,8 +212,35 @@ try {
     $access = New-Object -ComObject Access.Application
     $access.OpenCurrentDatabase($fullPath)
 
+# Pre-compile step: module/reference removal needs an editable .accdb (VBA cannot be
+    # changed in a compiled .accde).
+    $runPreCompile = ($Stage -eq 'All' -or $Stage -eq 'PreCompile')
+    # Post-compile steps: procedures and database properties run on the compiled .accde,
+    # matching the behavior of the last release (and leaving the source .accdb unaltered).
+    $runPostCompile = ($Stage -eq 'All' -or $Stage -eq 'PostCompile')
+
+# Remove VBA modules matching name patterns (e.g. test modules)
+    if ($runPreCompile -and $config.RemoveModules -and $config.RemoveModules.Count -gt 0) {
+        Write-Host "Removing VBA modules matching patterns: $($config.RemoveModules -join ', ')"
+        $vbProject = $access.VBE.ActiveVBProject
+        Remove-VbaModules -vbProject $vbProject -Patterns $config.RemoveModules
+    }
+    elseif ($runPreCompile) {
+        Write-Host "No modules to remove."
+    }
+
+# Remove VBA references by name (e.g. Rubberduck)
+    if ($runPreCompile -and $config.RemoveReferences -and $config.RemoveReferences.Count -gt 0) {
+        Write-Host "Removing VBA references: $($config.RemoveReferences -join ', ')"
+        $vbProject = $access.VBE.ActiveVBProject
+        Remove-VbaReferences -vbProject $vbProject -ReferenceNames $config.RemoveReferences
+    }
+    elseif ($runPreCompile) {
+        Write-Host "No references to remove."
+    }
+
 # Run procedures from config
-    if ($config.Procedures -and $config.Procedures.Count -gt 0) {
+    if ($runPostCompile -and $config.Procedures -and $config.Procedures.Count -gt 0) {
         
         foreach ($procedure in $config.Procedures) {
             if (-not $procedure.Name) {
@@ -148,12 +259,12 @@ try {
             Invoke-Procedure -access $access -ProcedureName $procedure.Name -Arguments $Parameters    
         }
     }
-    else {
+    elseif ($runPostCompile) {
         Write-Host "No procedures to run."
     }
 
 # Set database properties from config
-    if ($config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
+    if ($runPostCompile -and $config.DatabaseProperties -and $config.DatabaseProperties.Count -gt 0) {
         
         $db = $access.CurrentDb()
 
@@ -166,7 +277,7 @@ try {
             Set-DbProperty -db $db -PropertyName $propertyName -PropertyType $propertyType -PropertyValue $propertyValue
         }
     }
-    else {
+    elseif ($runPostCompile) {
         Write-Host "No database properties to set."
     }
 }
