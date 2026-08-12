@@ -212,13 +212,14 @@ try {
     $access = New-Object -ComObject Access.Application
     $access.OpenCurrentDatabase($fullPath)
 
-# Pre-compile steps: module/reference removal and procedures need an editable .accdb.
+# Pre-compile step: module/reference removal needs an editable .accdb (VBA cannot be
+    # changed in a compiled .accde).
     $runPreCompile = ($Stage -eq 'All' -or $Stage -eq 'PreCompile')
-    # Post-compile step: database properties are set on the compiled .accde so they
-    # do not take effect on (or alter) the source .accdb.
+    # Post-compile steps: procedures and database properties run on the compiled .accde,
+    # matching the behavior of the last release (and leaving the source .accdb unaltered).
     $runPostCompile = ($Stage -eq 'All' -or $Stage -eq 'PostCompile')
 
-# Remove VBA modules matching name patterns (e.g. test modules) before running procedures
+# Remove VBA modules matching name patterns (e.g. test modules)
     if ($runPreCompile -and $config.RemoveModules -and $config.RemoveModules.Count -gt 0) {
         Write-Host "Removing VBA modules matching patterns: $($config.RemoveModules -join ', ')"
         $vbProject = $access.VBE.ActiveVBProject
@@ -228,7 +229,7 @@ try {
         Write-Host "No modules to remove."
     }
 
-# Remove VBA references by name (e.g. Rubberduck) before running procedures
+# Remove VBA references by name (e.g. Rubberduck)
     if ($runPreCompile -and $config.RemoveReferences -and $config.RemoveReferences.Count -gt 0) {
         Write-Host "Removing VBA references: $($config.RemoveReferences -join ', ')"
         $vbProject = $access.VBE.ActiveVBProject
@@ -239,7 +240,7 @@ try {
     }
 
 # Run procedures from config
-    if ($runPreCompile -and $config.Procedures -and $config.Procedures.Count -gt 0) {
+    if ($runPostCompile -and $config.Procedures -and $config.Procedures.Count -gt 0) {
         
         foreach ($procedure in $config.Procedures) {
             if (-not $procedure.Name) {
@@ -258,7 +259,7 @@ try {
             Invoke-Procedure -access $access -ProcedureName $procedure.Name -Arguments $Parameters    
         }
     }
-    elseif ($runPreCompile) {
+    elseif ($runPostCompile) {
         Write-Host "No procedures to run."
     }
 

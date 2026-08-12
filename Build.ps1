@@ -102,9 +102,9 @@ Write-Host "-----"
 
 $accFilePath = $accdbPath
 
-# Prepare the application. Module/reference removal and procedures require an editable
-# .accdb, so they run before compiling. Database properties are applied after compiling,
-# directly on the .accde, so they do not take effect on (or alter) the source .accdb.
+# Prepare the application. Only module/reference removal requires an editable .accdb, so it
+# runs before compiling. Procedures and database properties are applied after compiling,
+# directly on the .accde, matching the last release and leaving the source .accdb unaltered.
 # When not compiling there is no .accde, so every step runs on the .accdb.
 if ($AppConfigFile -gt "") {
     $preStage = if ($CompileBool) { "PreCompile" } else { "All" }
@@ -125,7 +125,7 @@ if ($CompileBool) {
     $accFilePath = $compileResult.AccdePath
     Write-Host "-----"
 
-    # Apply database properties to the compiled .accde.
+    # Run procedures and apply database properties to the compiled .accde.
     if ($AppConfigFile -gt "") {
         Write-Host "Prepare application (PostCompile) from config file: $AppConfigFile"
         & "$PSScriptRoot/scripts/Prepare-Application.ps1" -AccessFile "$accFilePath" -ConfigFile "$AppConfigFile" -Stage PostCompile
