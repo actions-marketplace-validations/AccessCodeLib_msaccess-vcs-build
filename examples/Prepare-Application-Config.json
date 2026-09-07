@@ -1,4 +1,6 @@
 {
+    "RemoveModules": ["*_Tests", "Stub*"],
+    "RemoveReferences": ["Rubberduck"],
     "Procedures": [
         {
             "Name": "TestProcedure"
